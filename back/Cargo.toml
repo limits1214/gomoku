@@ -1,0 +1,4 @@
+[workspace]
+members = ["gomoku-ws", "gomoku-api"]
+
+resolver = "2"
