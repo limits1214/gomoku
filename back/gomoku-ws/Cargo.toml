@@ -4,3 +4,18 @@ version = "0.1.0"
 edition = "2021"
 
 [dependencies]
+tokio = { version = "1.43" }
+lambda_http = { version = "0.14" }
+aws-config = { version = "1.1", features = ["behavior-version-latest"] }
+aws-sdk-apigatewaymanagement = { version = "1.57" }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1" }
+
+# [profile.release]
+# opt-level = "z"         # 크기 최적화 (z) 또는 성능 최적화 (3)
+# lto = true
+# codegen-units = 1       # 단일 코드 생성 유닛 (최대 최적화)
+# panic = "abort"         # 패닉 발생 시 종료 (메모리 절약)
+# strip = "symbols"       # 디버그 정보 제거
+# overflow-checks = false # 산술 오버플로우 검사 비활성화 (런타임 속도 향상)
+# incremental = false     # 증분 빌드 비활성화 (최적화된 빌드 생성)

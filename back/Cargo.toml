@@ -1,4 +1,4 @@
 [workspace]
-members = ["gomoku-ws", "gomoku-api"]
+members = ["gomoku-ws", "gomoku-api", "gomoku-q"]
 
 resolver = "2"
