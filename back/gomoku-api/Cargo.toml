@@ -12,3 +12,5 @@ serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
 
 axum = { version = "0.8" }
+axum-extra = { version = "0.10.0", features = ["cookie", "typed-header"] }
+tower-http = { version = "0.6.2", features = ["full"] }
