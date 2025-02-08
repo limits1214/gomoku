@@ -1,6 +1,6 @@
-resolver = "2"
 
 [workspace]
+resolver = "2"
 members = ["gomoku-ws", "gomoku-api", "gomoku-q"]
 
 [profile.release]

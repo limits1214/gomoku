@@ -16,6 +16,7 @@ pub async fn create_app() -> Router {
             CorsLayer::new()
                 .allow_origin([
                     "http://localhost:5174".parse().unwrap(),
+                    "http://localhost:4173".parse().unwrap(),
                     "https://lsy969999.github.io".parse().unwrap(),
                 ])
                 .allow_credentials(true)
