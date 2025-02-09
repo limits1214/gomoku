@@ -5,8 +5,17 @@ use config::{Config, Environment};
 use serde::Deserialize;
 
 pub static APP_CONFIG: OnceLock<Arc<AppConfig>> = OnceLock::new();
+
 #[derive(Debug, Deserialize)]
-pub struct Settings {}
+pub struct DynamoSettings {
+    pub table_name: String,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct Settings {
+    pub dynamo: DynamoSettings,
+}
+
 impl Settings {
     pub fn new() -> Self {
         let builder = Config::builder()

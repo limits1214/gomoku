@@ -1,32 +1,42 @@
-use std::collections::HashMap;
+use axum::{
+    extract::State,
+    response::IntoResponse,
+    routing::{get, post},
+    Json, Router,
+};
+use utoipa::OpenApi;
 
-use aws_sdk_dynamodb::types::AttributeValue;
-use axum::{extract::State, response::IntoResponse, Router};
-use lambda_http::tracing;
-
-use crate::config::app_state::ArcAppState;
+use crate::{
+    config::app_state::ArcAppState, dto::response::ApiResponse, error::HandlerError, service,
+};
 
 pub fn room_router(state: ArcAppState) -> Router<ArcAppState> {
     Router::new()
+        .route("/room/create", post(create_room))
+        .route("/room/list", get(room_list))
 }
 
-async fn test(dynamo_client: State<aws_sdk_dynamodb::Client>) -> impl IntoResponse {
-    let mut item = HashMap::new();
-    item.insert("PK".to_string(), AttributeValue::S("USER#123".to_string()));
-    item.insert("SK".to_string(), AttributeValue::S("HAHA".to_string()));
+#[derive(OpenApi)]
+#[openapi(
+    paths(create_room, room_list),
+    tags(
+        (name = "room", description = "room desc"),
+    ),
+)]
+pub(super) struct RoomApi;
 
-    let a = dynamo_client
-        .put_item()
-        .table_name("Test")
-        .set_item(Some(item))
-        .condition_expression("attribute_not_exists(PK) AND attribute_not_exists(SK)")
-        .send()
-        .await
-        .unwrap();
-
-    tracing::info!("a: {a:?}");
+#[utoipa::path(tag = "room", post, path = "/create")]
+async fn create_room(
+    dynamo_client: State<aws_sdk_dynamodb::Client>,
+) -> Result<impl IntoResponse, HandlerError> {
+    service::room::create_room(&dynamo_client).await?;
+    Ok(Json(ApiResponse::success(())))
 }
 
-async fn create_room(dynamo_client: State<aws_sdk_dynamodb::Client>) -> impl IntoResponse {
-    //
+#[utoipa::path(tag = "room", get, path = "/list")]
+async fn room_list(
+    dynamo_client: State<aws_sdk_dynamodb::Client>,
+) -> Result<impl IntoResponse, HandlerError> {
+    service::room::room_list(&dynamo_client).await?;
+    Ok(())
 }

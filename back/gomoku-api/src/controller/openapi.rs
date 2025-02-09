@@ -5,7 +5,10 @@ use utoipa::{
 };
 use utoipa_swagger_ui::SwaggerUi;
 
-use crate::{config::app_state::ArcAppState, controller::test::TestApi};
+use crate::{
+    config::app_state::ArcAppState,
+    controller::{room::RoomApi, test::TestApi},
+};
 
 pub fn openapi_route(_state: ArcAppState) -> Router<ArcAppState> {
     Router::new().merge(SwaggerUi::new("/").url("/api-docs/openapi.json", ApiDoc::openapi()))
@@ -15,7 +18,7 @@ pub fn openapi_route(_state: ArcAppState) -> Router<ArcAppState> {
 #[openapi(
     nest(
         (path="/test", api = TestApi),
-        // (path="/api/user", api = UserApi),
+        (path="/room", api = RoomApi),
         // (path="/api/auth", api = AuthApi)
     ),
     modifiers(&SecurityAddon),

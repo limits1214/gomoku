@@ -2,10 +2,13 @@ use config::app_config::AppConfig;
 
 mod app;
 mod config;
+mod constant;
 mod controller;
 mod dto;
 mod error;
 mod pipe;
+mod service;
+mod util;
 
 pub async fn start_app() -> Result<(), lambda_http::Error> {
     use lambda_http::run;

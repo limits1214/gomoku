@@ -1,8 +1,6 @@
-use std::sync::Arc;
-
+use crate::util;
 use axum::extract::FromRef;
-
-use super::app_config::APP_CONFIG;
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub struct AppState {
@@ -33,6 +31,6 @@ impl FromRef<ArcAppState> for aws_sdk_dynamodb::Client {
 }
 
 async fn make_dynamo_client() -> aws_sdk_dynamodb::Client {
-    let shared_config = &APP_CONFIG.get().unwrap().aws_config;
+    let shared_config = util::config::get_aws_config();
     aws_sdk_dynamodb::Client::new(shared_config)
 }
