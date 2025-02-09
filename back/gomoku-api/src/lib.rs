@@ -6,6 +6,7 @@ mod constant;
 mod controller;
 mod dto;
 mod error;
+mod model;
 mod pipe;
 mod service;
 mod util;

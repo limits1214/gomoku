@@ -1,14 +1,15 @@
 use serde::{Deserialize, Serialize};
-use utoipa::ToSchema;
 use validator::Validate;
 
-#[derive(Debug, Serialize, Deserialize, ToSchema, Validate)]
-#[serde(rename_all = "camelCase")]
-pub struct SignupGuest {
+#[derive(Debug, Serialize, Deserialize, Validate)]
+pub struct GoogleOauth2UserInfo {
+    pub sub: String,
     #[validate(length(
         min = 3,
         max = 10,
         message = "닉네임은 3글자 이상 10글자 미만 이어야 합니다."
     ))]
-    pub nick_name: String,
+    pub name: Option<String>,
+    pub picture: Option<String>,
+    pub email: Option<String>,
 }

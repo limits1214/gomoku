@@ -7,7 +7,7 @@ use utoipa_swagger_ui::SwaggerUi;
 
 use crate::{
     config::app_state::ArcAppState,
-    controller::{room::RoomApi, test::TestApi},
+    controller::{auth::AuthApi, room::RoomApi, test::TestApi, user::UserApi},
 };
 
 pub fn openapi_route(_state: ArcAppState) -> Router<ArcAppState> {
@@ -19,7 +19,8 @@ pub fn openapi_route(_state: ArcAppState) -> Router<ArcAppState> {
     nest(
         (path="/test", api = TestApi),
         (path="/room", api = RoomApi),
-        // (path="/api/auth", api = AuthApi)
+        (path="/auth", api = AuthApi),
+        (path="/user", api = UserApi),
     ),
     modifiers(&SecurityAddon),
     security(

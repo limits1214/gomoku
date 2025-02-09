@@ -1,4 +1,4 @@
-use crate::config::app_config::{DynamoSettings, APP_CONFIG};
+use crate::config::app_config::{DynamoSettings, JwtKeys, APP_CONFIG};
 
 // pub fn get_config_app_server_port() -> &'static u32 {
 //     &APP_CONFIG.get().unwrap().settings.app.server_port
@@ -16,20 +16,20 @@ use crate::config::app_config::{DynamoSettings, APP_CONFIG};
 //     &APP_CONFIG.get().unwrap().settings.redis.redis_url
 // }
 
-// pub fn get_config_jwt_access_keys() -> &'static JwtKeys {
-//     &APP_CONFIG.get().unwrap().jwt_access_keys
-// }
+pub fn get_config_jwt_access_keys() -> &'static JwtKeys {
+    &APP_CONFIG.get().unwrap().jwt_access_keys
+}
 
-// pub fn get_config_jwt_refresh_keys() -> &'static JwtKeys {
-//     &APP_CONFIG.get().unwrap().jwt_refresh_keys
-// }
-// pub fn get_config_jwt_access_time() -> &'static i64 {
-//     &APP_CONFIG.get().unwrap().settings.jwt.jwt_access_time
-// }
+pub fn get_config_jwt_refresh_keys() -> &'static JwtKeys {
+    &APP_CONFIG.get().unwrap().jwt_refresh_keys
+}
+pub fn get_config_jwt_access_time() -> &'static i64 {
+    &APP_CONFIG.get().unwrap().settings.jwt.jwt_access_time
+}
 
-// pub fn get_config_jwt_refresh_time() -> &'static i64 {
-//     &APP_CONFIG.get().unwrap().settings.jwt.jwt_refresh_time
-// }
+pub fn get_config_jwt_refresh_time() -> &'static i64 {
+    &APP_CONFIG.get().unwrap().settings.jwt.jwt_refresh_time
+}
 
 // pub fn get_config_oauth2() -> &'static Oauth2Settings {
 //     &APP_CONFIG.get().unwrap().settings.oauth2

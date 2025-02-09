@@ -10,7 +10,7 @@ use crate::{
     config::app_state::ArcAppState, dto::response::ApiResponse, error::HandlerError, service,
 };
 
-pub fn room_router(state: ArcAppState) -> Router<ArcAppState> {
+pub fn room_router(_state: ArcAppState) -> Router<ArcAppState> {
     Router::new()
         .route("/room/create", post(create_room))
         .route("/room/list", get(room_list))

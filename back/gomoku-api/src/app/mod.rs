@@ -1,6 +1,9 @@
 use crate::{
     config::app_state::ArcAppState,
-    controller::{openapi::openapi_route, room::room_router, test::test_router},
+    controller::{
+        auth::auth_router, openapi::openapi_route, room::room_router, test::test_router,
+        user::user_router,
+    },
 };
 use axum::{
     http::{header, Method},
@@ -14,6 +17,8 @@ pub async fn create_app() -> Router {
         .merge(openapi_route(arc_app_state.clone()))
         .merge(room_router(arc_app_state.clone()))
         .merge(test_router(arc_app_state.clone()))
+        .merge(auth_router(arc_app_state.clone()))
+        .merge(user_router(arc_app_state.clone()))
         .with_state(arc_app_state)
         .layer(CompressionLayer::new())
         .layer(RequestBodyLimitLayer::new(1024 * 1024))
