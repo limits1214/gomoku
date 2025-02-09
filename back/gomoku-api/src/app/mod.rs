@@ -1,15 +1,20 @@
+use crate::{
+    config::app_state::ArcAppState,
+    controller::{openapi::openapi_route, room::room_router, test::test_router},
+};
 use axum::{
     http::{header, Method},
-    routing::get,
-    Json, Router,
+    Router,
 };
-use serde_json::json;
 use tower_http::{compression::CompressionLayer, cors::CorsLayer, limit::RequestBodyLimitLayer};
 
 pub async fn create_app() -> Router {
+    let arc_app_state = ArcAppState::new().await;
     Router::new()
-        .route("/", get(|| async { Json(json!({"msg":"hello4"})) }))
-        .route("/hello", get(|| async { Json(json!({"msg":"hellozz"})) }))
+        .merge(openapi_route(arc_app_state.clone()))
+        .merge(room_router(arc_app_state.clone()))
+        .merge(test_router(arc_app_state.clone()))
+        .with_state(arc_app_state)
         .layer(CompressionLayer::new())
         .layer(RequestBodyLimitLayer::new(1024 * 1024))
         .layer(

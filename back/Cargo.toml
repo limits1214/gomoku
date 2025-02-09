@@ -1,4 +1,3 @@
-
 [workspace]
 resolver = "2"
 members = ["gomoku-ws", "gomoku-api", "gomoku-q"]
