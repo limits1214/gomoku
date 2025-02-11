@@ -1,6 +1,8 @@
 use aws_config::Region;
 use aws_sdk_apigatewaymanagement::{config, primitives::Blob};
-use lambda_http::{request::RequestContext, service_fn, tracing, Body, Error, Request, Response};
+use lambda_http::{
+    request::RequestContext, service_fn, tracing, Body, Error, Request, RequestExt, Response,
+};
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 
@@ -14,6 +16,9 @@ async fn main() {
 }
 
 async fn handler(request: Request) -> Result<Response<Body>, Error> {
+    // tracing::info!("qs: {:?}", request.query_string_parameters());
+    // tracing::info!("headers: {:?}", request.headers());
+
     let context = request
         .extensions()
         .get::<lambda_http::request::RequestContext>();
@@ -28,7 +33,7 @@ async fn handler(request: Request) -> Result<Response<Body>, Error> {
             .status(400)
             .body(Body::Text(json!({ "error": "No Route Key" }).to_string()))?);
     };
-
+    // tracing::info!("route_key: {:?}", route_key);
     let client = make_client().await;
     let body = request.body();
 
