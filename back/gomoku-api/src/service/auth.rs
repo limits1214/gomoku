@@ -22,18 +22,17 @@ pub async fn signup_guest(
     let nanoid = nanoid!();
     let pk = format!("USER#{nanoid}");
     let status = "OK".to_string();
+    let ty = "GUEST".to_string();
     let role = "USER".to_string();
     let mut item: HashMap<String, AttributeValue> = HashMap::new();
     item.insert(PK.to_string(), AttributeValue::S(pk));
     item.insert(SK.to_string(), AttributeValue::S("INFO".to_string()));
 
-    item.insert("CREATED_AT".to_string(), AttributeValue::S(time));
-    item.insert(
-        "NICK_NAME".to_string(),
-        AttributeValue::S(nick_name.clone()),
-    );
-    item.insert("ROLE".to_string(), AttributeValue::S(role.clone()));
-    item.insert("STATUS".to_string(), AttributeValue::S(status.clone()));
+    item.insert("type".to_string(), AttributeValue::S(ty));
+    item.insert("createdAt".to_string(), AttributeValue::S(time));
+    item.insert("nickName".to_string(), AttributeValue::S(nick_name.clone()));
+    item.insert("role".to_string(), AttributeValue::S(role.clone()));
+    item.insert("status".to_string(), AttributeValue::S(status.clone()));
 
     let _output = dynamo_client
         .put_item()
@@ -58,8 +57,8 @@ pub async fn signup_guest(
     let mut item: HashMap<String, AttributeValue> = HashMap::new();
     item.insert(PK.to_string(), AttributeValue::S(session_pk));
     item.insert(SK.to_string(), AttributeValue::S("INFO".to_string()));
-    item.insert("JWT".to_string(), AttributeValue::S(refresh_token.clone()));
-    // item.insert("USER_ID".to_string(), AttributeValue::S(nanoid.clone()));
+    item.insert("jwt".to_string(), AttributeValue::S(refresh_token.clone()));
+    item.insert("userId".to_string(), AttributeValue::S(nanoid.clone()));
 
     let _output = dynamo_client
         .put_item()
@@ -75,8 +74,6 @@ pub async fn access_token_refresh(
     dynamo_client: &aws_sdk_dynamodb::Client,
     refresh_token_hash: String,
 ) -> anyhow::Result<String> {
-    //
-
     let table_name = util::dynamo::get_table_name();
     let response = dynamo_client
         .get_item()
@@ -92,7 +89,7 @@ pub async fn access_token_refresh(
     let Some(output) = response.item else {
         bail!("RefreshTokenNotExists");
     };
-    let Some(refresh_jwt) = output.get("JWT") else {
+    let Some(refresh_jwt) = output.get("jwt") else {
         bail!("RefreshTokenNotExists2");
     };
     let Ok(refresh_jwt) = refresh_jwt.as_s() else {
@@ -114,21 +111,21 @@ pub async fn access_token_refresh(
         bail!("UserNotExists");
     };
 
-    let Some(nick_name) = output.get("NICK_NAME") else {
+    let Some(nick_name) = output.get("nickName") else {
         bail!("NICK_NOT_EXISTS")
     };
     let Ok(nick_name) = nick_name.as_s() else {
         bail!("NICK_NOT_EXISTS")
     };
 
-    let Some(role) = output.get("ROLE") else {
+    let Some(role) = output.get("role") else {
         bail!("ROLE_NOT_EXISTS")
     };
     let Ok(role) = role.as_s() else {
         bail!("ROLE_NOT_EXISTS")
     };
 
-    let Some(status) = output.get("STATUS") else {
+    let Some(status) = output.get("status") else {
         bail!("STATUS_NOT_EXISTS")
     };
     let Ok(status) = status.as_s() else {

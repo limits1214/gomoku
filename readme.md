@@ -11,35 +11,36 @@ url: https://lsy969999.github.io/gomoku/
 ---
 # DDB
 목표
-GSI&LSI는 최대한 쓰지않기 (비용이 추가된다고함., 핫파티셔닝은 일단 생각말자)
+GSI&LSI는 최대한 쓰지않기 (비용이 추가된다고함.,)
 그렇다고 Scan 쓰지않기 최대한 Qeury로 (Scan은 안티패턴이라고함)
 
-## UERR
+## USER
 
-|PK     |SK                 |ATTR_NAME  |ATTR_TYPE  |
-|-      |-                  |-          |-          |
-|`USER` |`USER_ID#<nanoid>` |createdAt  |timestamp  |
-|       |                   |nickName   |string     |
-|       |                   |type       |string     |
-|       |                   |status     |string     |
+|PK                 |SK                 |ATTR_NAME  |ATTR_TYPE  |
+|-                  |-                  |-          |-          |
+|`USER_ID#<nanoid>` |`INFO`             |createdAt  |timestamp  |
+|                   |                   |nickName   |string     |
+|                   |                   |type       |string     | guest / google / email
+|                   |                   |status     |string     | ok / 
+|                   |                   |role       |string     | user / admin
 
 ## OAUTH2
 
-|PK         |SK                         |ATTR_NAME  |ATTR_TYPE  |
-|-          |-                          |-          |-          |
-|`OAUTH2`   |`PROVIDER#<type>#ID#<str>` |userId     |nanoid     |
-|           |                           |etc        |map        |
+|PK                 |SK                         |ATTR_NAME  |ATTR_TYPE  |
+|-                  |-                          |-          |-          |
+|`OAUTH2#<type>`    |`PROVIDER_ID#<str>`        |userId     |nanoid     |
+|                   |                           |etc        |map        |
 
 ## SESSION
-|PK         |SK             |ATTR_NAME  |ATTR_TYPE  |
-|-          |-              |-          |-          |
-|`SESSION`  |`HASH#<str>`   |jwt        |str        |
-|           |               |userId     |nanoid     |
+|PK                 |SK             |ATTR_NAME  |ATTR_TYPE  |
+|-                  |-              |-          |-          |
+|`SESSION#<str>`    |`INFO`         |jwt        |str        |
+|                   |               |userId     |nanoid     |
 
 ## CHANNEL
-|PK         |SK                         |ATTR_NAME  |ATTR_TYPE  |
-|-          |-                          |-          |-          |
-|`CHANNEL`  |`CHANNEL#<str>#ROOM#<num>` |room       |nanoid     |
+|PK                 |SK             |ATTR_NAME  |ATTR_TYPE  |
+|-                  |-              |-          |-          |
+|`CHANNEL#<str>`    |`ROOM#<num>`   |room       |nanoid     |
 
 ## ROOM
 |PK             |SK                     |ATTR_NAME      |ATTR_TYPE  |
@@ -51,18 +52,17 @@ GSI&LSI는 최대한 쓰지않기 (비용이 추가된다고함., 핫파티셔�
 |               |                       |event          |map        |
 
 ## WS_CONN
-|PK         |SK                 |ATTR_NAME  |ATTR_TYPE  |
-|-          |-                  |-          |-          |
-|`WS_CONN`  |`CONN_ID#<str>`    |createdAt  |timestamp  |
-|           |                   |userId     |nanoid     |
-|           |                   |jwt        |string     |
-|           |`USER_ID#<str>`    |createdAt  |timestamp  |
-|           |                   |connId     |string     |
+|PK                 |SK                 |ATTR_NAME  |ATTR_TYPE  |
+|-                  |-                  |-          |-          |
+|`WS_CONN_ID#<str>` |`USER_ID#_`        |-          |-          |
+|`WS_CONN_ID#<str>` |`USER_ID#<nanoid>` |createdAt  |timestamp  |
+|                   |                   |jwt        |string     |
+|`USER_ID#<nanoid>` |`WS_CONN_ID#<str>` |createdAt  |timestamp  |
 
 ## WS_TOPIC
-|PK         |SK                             |
-|-          |-                              |
-|`WS_TOPIC` |`TOPIC#<str>#CONN_ID#<str>`    |
+|PK                 |SK                 |ATTR_NAME  |ATTR_TYPE  |
+|-                  |-                  |-          |-          |
+|`WS_TOPIC#<str>`   |`WS_CONN_ID#<str>` |userId     |nanoid     |
 
 
 ---
@@ -89,7 +89,7 @@ GSI&LSI는 최대한 쓰지않기 (비용이 추가된다고함., 핫파티셔�
 {
     "t": "setTopic"
     "d": {
-        "jwt": "<string?>"
+        "topic": "<string>"
     }
 }
 ```
@@ -99,7 +99,21 @@ GSI&LSI는 최대한 쓰지않기 (비용이 추가된다고함., 핫파티셔�
 }
 ```
 
+## jwt 세팅
 
+```json
+{
+    "t": "setJwt"
+    "d": {
+        "jwt": "<string>"
+    }
+}
+```
+```json
+{
+    "t": "setJwtRes"
+}
+```
 
 WS 인증 프로세스
 
