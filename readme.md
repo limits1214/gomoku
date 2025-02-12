@@ -1,10 +1,10 @@
 # GOMOKU
 간단히 오목을 두는 사이트
-url: https://lsy969999.github.io/gomoku/
+url: https://gogomoku.vercel.app/
 
 #### 사용 스택
-프론트엔드: 리액트
-프론트엔드배포: 깃헙페이지
+프론트엔드: 넥스트js
+프론트엔드배포: 버셀
 백엔드: 악섬, 람다런타임, 다이나모디비
 백엔드배포: API는 람다, 웹소켓은 AWS GW 웹소켓
 
