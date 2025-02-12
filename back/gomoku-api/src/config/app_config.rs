@@ -12,6 +12,10 @@ pub struct DynamoSettings {
     pub table_name: String,
 }
 #[derive(Debug, Deserialize)]
+pub struct CookieSettings {
+    pub secure: bool,
+}
+#[derive(Debug, Deserialize)]
 pub struct JwtSettings {
     pub jwt_access_secret: String,
     pub jwt_refresh_secret: String,
@@ -22,6 +26,7 @@ pub struct JwtSettings {
 pub struct Settings {
     pub dynamo: DynamoSettings,
     pub jwt: JwtSettings,
+    pub cookie: CookieSettings,
 }
 
 impl Settings {

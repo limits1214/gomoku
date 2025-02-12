@@ -11,6 +11,5 @@ pub struct WsConnect {
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct WsDisConnect {
-    pub jwt: Option<String>,
     pub connection_id: String,
 }

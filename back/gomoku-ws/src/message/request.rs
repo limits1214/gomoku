@@ -26,3 +26,19 @@ fn t() {
 
     assert_eq!(expected_json_value, value);
 }
+#[test]
+fn t2() {
+    let expected_json = r#"
+    {
+        "t": "wsInitial",
+        "d": {
+            "jwt": "()"
+        }
+    }"#;
+    let value = WsRequestMessage::Echo {
+        msg: "()".to_string(),
+    };
+    let expected_json_value = serde_json::from_str::<WsRequestMessage>(&expected_json).unwrap();
+    println!("{expected_json_value:?}")
+    // assert_eq!(expected_json_value, value);
+}

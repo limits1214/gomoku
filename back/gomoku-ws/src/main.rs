@@ -47,13 +47,20 @@ async fn handler(request: Request) -> Result<Response<Body>, Error> {
                 .body(Body::Text(json!({ "status": "connected" }).to_string()))?);
         }
         "$disconnect" => {
+            let Some(connection_id) = &ws.connection_id else {
+                tracing::warn!("disconnect connection_id empty");
+                return Ok(Response::builder()
+                    .status(400)
+                    .body(Body::Text(json!({ "status": "disconnect" }).to_string()))?);
+            };
+            handler::disconnect::ws_disconnect(connection_id, http_client).await?;
             return Ok(Response::builder()
                 .status(200)
                 .body(Body::Text(json!({ "status": "disconnect" }).to_string()))?);
         }
         "$default" => {
             let Some(connection_id) = &ws.connection_id else {
-                tracing::warn!("connection_id empty");
+                tracing::warn!("default connection_id empty");
                 return Ok(Response::builder()
                     .status(400)
                     .body(Body::Text(json!({ "status": "disconnect" }).to_string()))?);
@@ -64,7 +71,7 @@ async fn handler(request: Request) -> Result<Response<Body>, Error> {
                         handler::echo::echo_handler(api_gw_client, connection_id, msg).await?;
                     }
                     WsRequestMessage::WsInitial { jwt } => {
-                        //
+                        handler::default::ws_initial(connection_id, http_client, jwt).await?;
                     }
                 },
                 Err(err) => {

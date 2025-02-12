@@ -51,7 +51,7 @@ url: https://lsy969999.github.io/gomoku/
 ## WS_CONN
 |PK                 |SK                 |ATTR_NAME  |ATTR_TYPE  |
 |-                  |-                  |-          |-          |
-|`WS_CONN#<str>`    |`USER#_`           |createdAt  |timestamp  |
+|`WS_CONN#<str>`    |`NOUSER`           |createdAt  |timestamp  |
 |`WS_CONN#<str>`    |`USER#<nanoid>`    |createdAt  |timestamp  |
 |                   |                   |jwt        |string     |
 |`USER#<nanoid>`    |`WS_CONN#<str>`    |createdAt  |timestamp  |

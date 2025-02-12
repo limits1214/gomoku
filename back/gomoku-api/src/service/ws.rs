@@ -49,7 +49,7 @@ pub async fn ws_initial(
             .await?;
     } else {
         let ws_conn_pk = format!("WS_CONN#{connection_id}");
-        let ws_conn_sk = format!("USER#_");
+        let ws_conn_sk = format!("NOUSER");
         let time = Local::now().to_rfc3339();
         let map = DynamoMapHelper::new()
             .insert_pk(ws_conn_pk)
@@ -72,47 +72,69 @@ pub async fn ws_initial(
 pub async fn ws_disconnect(
     dynamo_client: &aws_sdk_dynamodb::Client,
     connection_id: String,
-    jwt: Option<String>,
 ) -> anyhow::Result<()> {
     // 1. USER 제거 // jwt 존재시
     // 2. WS_CONN 제거
     // 3. WS_TOPIC 제거(with broadcast?)
 
-    if let Some(jwt) = jwt {
-        let claims = util::jwt::decode_access(&jwt)?;
-        let user_id = claims.sub;
-
-        // WS_CONN 의 USER 제거
-        let delete_ws_conn_pk = format!("WS_CONN#{connection_id}");
-        let delete_ws_conn_sk = format!("USER#{user_id}");
-        let output = dynamo_client
-            .delete_item()
-            .table_name(util::dynamo::get_table_name())
-            .key(PK, AttributeValue::S(delete_ws_conn_pk))
-            .key(SK, AttributeValue::S(delete_ws_conn_sk))
-            .send()
-            .await?;
-
-        // USER의 WS_CONN 제거
-        let delete_user_pk = format!("USER#{user_id}");
-        let delete_user_sk = format!("WS_CONN#{connection_id}");
-        let output = dynamo_client
-            .delete_item()
-            .table_name(util::dynamo::get_table_name())
-            .key(PK, AttributeValue::S(delete_user_pk))
-            .key(SK, AttributeValue::S(delete_user_sk))
-            .send()
-            .await?;
-    }
-
-    // 혹시 USER_ID#_ 가 존재할수 있으니 지워준다.
+    // 혹시 NOUSER 가 존재할수 있으니 지워준다.
     let delete_ws_conn_pk = format!("WS_CONN#{connection_id}");
-    let delete_ws_conn_sk = format!("USER#_");
+    let delete_ws_conn_sk = format!("NOUSER");
     let output = dynamo_client
         .delete_item()
         .table_name(util::dynamo::get_table_name())
         .key(PK, AttributeValue::S(delete_ws_conn_pk))
         .key(SK, AttributeValue::S(delete_ws_conn_sk))
+        .send()
+        .await?;
+
+    let output = dynamo_client
+        .query()
+        .table_name(util::dynamo::get_table_name())
+        .key_condition_expression("PK = :PK AND begins_with(SK, :SK)")
+        .expression_attribute_values(":PK", AttributeValue::S(format!("WS_CONN#{connection_id}")))
+        .expression_attribute_values(":SK", AttributeValue::S("USER#".to_string()))
+        .send()
+        .await?;
+
+    let Some(output) = output.items else {
+        return Ok(());
+    };
+
+    let Some(row) = output.first() else {
+        return Ok(());
+    };
+
+    let Some(jwt) = row.get("jwt") else {
+        return Ok(());
+    };
+
+    let Ok(jwt) = jwt.as_s() else {
+        return Ok(());
+    };
+
+    let claims = util::jwt::decode_access(jwt)?;
+    let user_id = claims.sub;
+
+    // WS_CONN 의 USER 제거
+    let delete_ws_conn_pk = format!("WS_CONN#{connection_id}");
+    let delete_ws_conn_sk = format!("USER#{user_id}");
+    let output = dynamo_client
+        .delete_item()
+        .table_name(util::dynamo::get_table_name())
+        .key(PK, AttributeValue::S(delete_ws_conn_pk))
+        .key(SK, AttributeValue::S(delete_ws_conn_sk))
+        .send()
+        .await?;
+
+    // USER의 WS_CONN 제거
+    let delete_user_pk = format!("USER#{user_id}");
+    let delete_user_sk = format!("WS_CONN#{connection_id}");
+    let output = dynamo_client
+        .delete_item()
+        .table_name(util::dynamo::get_table_name())
+        .key(PK, AttributeValue::S(delete_user_pk))
+        .key(SK, AttributeValue::S(delete_user_sk))
         .send()
         .await?;
 

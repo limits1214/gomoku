@@ -42,3 +42,7 @@ pub fn get_dynamo_settings() -> &'static DynamoSettings {
 pub fn get_aws_config() -> &'static aws_config::SdkConfig {
     &APP_CONFIG.get().unwrap().aws_config
 }
+
+pub fn get_cookie_secure() -> &'static bool {
+    &APP_CONFIG.get().unwrap().settings.cookie.secure
+}

@@ -11,6 +11,6 @@ aws-sdk-apigatewaymanagement = { version = "1.57" }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1" }
 
-reqwest = { version = "0.12", features = ["json"] }
+reqwest = { version = "0.12", features = ["json", "native-tls-vendored"] }
 anyhow = "1"
 config = "0.15"

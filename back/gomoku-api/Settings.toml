@@ -8,3 +8,6 @@ jwt_refresh_secret = "refresh_refresh_refresh_refresh_refresh_refresh_refresh_re
 jwt_access_time = 60
 # 1 * 60 * 60 * 24
 jwt_refresh_time = 86400
+
+[cookie]
+secure = false

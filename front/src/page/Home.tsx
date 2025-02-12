@@ -73,8 +73,10 @@ const GuestSignup = () => {
       })
     })
     const json = await res.json();
-    const accessToken = json.data.accessToken;
-    setAccessToken(accessToken)
+    if (json.data && json.data.accessToken) {
+      const accessToken = json.data.accessToken;
+      setAccessToken(accessToken)
+    }
   }
   const onChangeNickName = (event: React.ChangeEvent<HTMLInputElement>) => {
     const nickName = event.target.value;

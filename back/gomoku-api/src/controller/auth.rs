@@ -5,9 +5,9 @@ use crate::{
     error::HandlerError,
     service, util,
 };
-use anyhow::anyhow;
 use axum::{extract::State, response::IntoResponse, routing::post, Json, Router};
 use axum_extra::extract::CookieJar;
+use serde_json::json;
 use utoipa::OpenApi;
 use validator::Validate;
 
@@ -52,10 +52,18 @@ pub async fn access_token_refresh(
 ) -> Result<impl IntoResponse, HandlerError> {
     let refresh_token = match jar.get(REFRESH_TOKEN) {
         Some(rt) => rt.value(),
-        None => Err(anyhow!("AuthError::RefreshTokenEmpty"))?,
+        None => {
+            return Ok((
+                jar,
+                Json(ApiResponse::success(json!({
+                    "msg": "RefreshTokenEmpty"
+                }))),
+            )
+                .into_response())
+        }
     };
     let access_token =
         service::auth::access_token_refresh(&dynamo_client, refresh_token.to_string()).await?;
     let ret = ApiResponse::success(dto::response::auth::AccessToken { access_token });
-    Ok((jar, Json(ret)))
+    Ok((jar, Json(ret)).into_response())
 }

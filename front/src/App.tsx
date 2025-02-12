@@ -11,7 +11,7 @@ import useWebSocket, { ReadyState } from 'react-use-websocket'
 function App() {
 
   const { setLastWsMessage,  setSendWsMessage } = useWsStore();
-  
+  const { isInitEnd, accessToken } = useAuthStore();
   const [socketUrl, setSocketUrl] = useState<string | null>(null);
   const {sendMessage, lastMessage, readyState} = useWebSocket(socketUrl, {
       // shouldReconnect: (event) => {
@@ -22,12 +22,13 @@ function App() {
         // reconnectInterval: 1000,
         onOpen: () => {
           console.log('ws open')
-            // const obj = {
-            //     auth: {
-            //         accessToken 
-            //     }
-            // }
-            // sendMessage(JSON.stringify(obj));
+            const obj = {
+                t: "wsInitial",
+                d: {
+                  jwt: accessToken
+                }
+            }
+            sendMessage(JSON.stringify(obj));
         },
         onClose: () => {
           console.log('ws close')
@@ -43,14 +44,14 @@ function App() {
 
   useEffect(() => {
     // setSocketUrl(`wss://echo.websocket.org`);
-    
-    setSocketUrl(`wss://0gnlyzkqd6.execute-api.ap-northeast-2.amazonaws.com/dev/?asdfzz=1234`);
-  }, [])
+    if (isInitEnd) {
+      setSocketUrl(`wss://0gnlyzkqd6.execute-api.ap-northeast-2.amazonaws.com/dev/`);
+    }
+  }, [isInitEnd])
 
   useEffect(() =>{
-    // console.log('ws state: ', connectionStatus)
+    console.log('ws state: ', connectionStatus)
     if (connectionStatus == 'Open') {
-      //
       setSendWsMessage(sendMessage)
     }
   }, [connectionStatus, sendMessage, setSendWsMessage])
@@ -114,9 +115,10 @@ const useInitialAuthCheck = () =>{
           method: 'POST',
         })
         const json = await res.json();
-        const accessToken = json.data.accessToken;
-        // console.log(accessToken)
-        setAccessToken(accessToken)
+        if (json.data && json.data.accessToken) {
+          const accessToken = json.data.accessToken;
+          setAccessToken(accessToken)
+        }
       } catch (error) {
         console.error(error)
       }

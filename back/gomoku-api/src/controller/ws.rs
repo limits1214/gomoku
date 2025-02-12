@@ -4,8 +4,6 @@ use axum::{
     routing::{get, post},
     Json, Router,
 };
-use lambda_http::tracing;
-use serde_json::json;
 use utoipa::OpenApi;
 
 use crate::{
@@ -49,7 +47,7 @@ pub async fn ws_disconnect(
     dynamo_client: State<aws_sdk_dynamodb::Client>,
     Json(j): Json<WsDisConnect>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    service::ws::ws_disconnect(&dynamo_client, j.connection_id, j.jwt).await?;
+    service::ws::ws_disconnect(&dynamo_client, j.connection_id).await?;
     let ret = ApiResponse::success(());
     Ok(Json(ret))
 }
