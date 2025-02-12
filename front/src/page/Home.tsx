@@ -1,10 +1,12 @@
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { Link } from "react-router-dom"
+import { useAuthStore } from "../store/store"
 
 const Home = () => {
   return (
     <div>
       <div>channel: 01</div>
+      <GuestSignup/>
       <div>
         <button>New Room</button>
         <table >
@@ -55,3 +57,42 @@ const Home = () => {
 }
 
 export default Home
+
+const GuestSignup = () => {
+  const {isInitEnd, accessToken, setAccessToken} = useAuthStore();
+  const [nickName, setNickName] = useState("");
+  const handleSignup= async () => {
+    const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/signup/guest`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        nickName
+      })
+    })
+    const json = await res.json();
+    const accessToken = json.data.accessToken;
+    setAccessToken(accessToken)
+  }
+  const onChangeNickName = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const nickName = event.target.value;
+    setNickName(nickName)
+  }
+
+  const [isVisible, setIsVisible] = useState(false)
+  
+  useEffect(() => {
+    setIsVisible(isInitEnd && accessToken == null)
+  }, [isInitEnd, accessToken])
+  return (
+    <>
+      {isVisible && <div>
+          <input type="text" onChange={onChangeNickName} />
+          <button onClick={ handleSignup }>Signup</button>
+        </div>
+      }
+    </>
+  )
+}

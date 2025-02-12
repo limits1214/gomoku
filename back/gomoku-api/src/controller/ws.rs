@@ -15,29 +15,31 @@ use crate::{
         response::ApiResponse,
     },
     error::HandlerError,
+    service,
 };
 
 pub fn ws_router(_state: ArcAppState) -> Router<ArcAppState> {
     Router::new()
-        .route("/ws/connect", post(ws_connect))
+        .route("/ws/initial", post(ws_initial))
         .route("/ws/disconnect", post(ws_disconnect))
         .route("/ws/conn_list", get(ws_conn_list))
 }
 
 #[derive(OpenApi)]
 #[openapi(
-    paths(ws_connect, ws_disconnect),
+    paths(ws_initial, ws_disconnect),
     tags(
         (name = "ws", description = "ws desc"),
     ),
 )]
 pub(super) struct WsApi;
 
-#[utoipa::path(tag = "ws", post, path = "/connect")]
-pub async fn ws_connect(
+#[utoipa::path(tag = "ws", post, path = "/initial")]
+pub async fn ws_initial(
     dynamo_client: State<aws_sdk_dynamodb::Client>,
     Json(j): Json<WsConnect>,
 ) -> Result<impl IntoResponse, HandlerError> {
+    service::ws::ws_initial(&dynamo_client, j.connection_id, j.jwt).await?;
     let ret = ApiResponse::success(());
     Ok(Json(ret))
 }
@@ -47,6 +49,7 @@ pub async fn ws_disconnect(
     dynamo_client: State<aws_sdk_dynamodb::Client>,
     Json(j): Json<WsDisConnect>,
 ) -> Result<impl IntoResponse, HandlerError> {
+    service::ws::ws_disconnect(&dynamo_client, j.connection_id, j.jwt).await?;
     let ret = ApiResponse::success(());
     Ok(Json(ret))
 }

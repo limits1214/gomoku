@@ -24,3 +24,23 @@ export const useWsStore = create<WsState>()(
     })
   )
 )
+
+interface AuthState {
+  accessToken: string | null,
+  isInitEnd: boolean,
+  setAccessToken: (token: string|null) => void,
+  clearAccessToken: () => void,
+  setIsInitEnd: (isInitEnd: boolean) => void,
+}
+
+export const useAuthStore = create<AuthState>()(
+  devtools(
+      (set) => ({
+          accessToken: null,
+          isInitEnd: false,
+          setAccessToken: (token) => set({accessToken: token}),
+          clearAccessToken: () => set({accessToken: null}),
+          setIsInitEnd: (isInitEnd) => set({isInitEnd}),
+      })
+  )
+)

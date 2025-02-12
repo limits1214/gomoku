@@ -10,15 +10,12 @@ url: https://lsy969999.github.io/gomoku/
 
 ---
 # DDB
-목표
-GSI&LSI는 최대한 쓰지않기 (비용이 추가된다고함.,)
-그렇다고 Scan 쓰지않기 최대한 Qeury로 (Scan은 안티패턴이라고함)
 
 ## USER
 
 |PK                 |SK                 |ATTR_NAME  |ATTR_TYPE  |
 |-                  |-                  |-          |-          |
-|`USER_ID#<nanoid>` |`INFO`             |createdAt  |timestamp  |
+|`USER#<nanoid>`    |`INFO`             |createdAt  |timestamp  |
 |                   |                   |nickName   |string     |
 |                   |                   |type       |string     | guest / google / email
 |                   |                   |status     |string     | ok / 
@@ -28,7 +25,7 @@ GSI&LSI는 최대한 쓰지않기 (비용이 추가된다고함.,)
 
 |PK                 |SK                         |ATTR_NAME  |ATTR_TYPE  |
 |-                  |-                          |-          |-          |
-|`OAUTH2#<type>`    |`PROVIDER_ID#<str>`        |userId     |nanoid     |
+|`OAUTH2#<type>`    |`ID#<str>`                 |userId     |nanoid     |
 |                   |                           |etc        |map        |
 
 ## SESSION
@@ -54,15 +51,15 @@ GSI&LSI는 최대한 쓰지않기 (비용이 추가된다고함.,)
 ## WS_CONN
 |PK                 |SK                 |ATTR_NAME  |ATTR_TYPE  |
 |-                  |-                  |-          |-          |
-|`WS_CONN_ID#<str>` |`USER_ID#_`        |-          |-          |
-|`WS_CONN_ID#<str>` |`USER_ID#<nanoid>` |createdAt  |timestamp  |
+|`WS_CONN#<str>`    |`USER#_`           |createdAt  |timestamp  |
+|`WS_CONN#<str>`    |`USER#<nanoid>`    |createdAt  |timestamp  |
 |                   |                   |jwt        |string     |
-|`USER_ID#<nanoid>` |`WS_CONN_ID#<str>` |createdAt  |timestamp  |
+|`USER#<nanoid>`    |`WS_CONN#<str>`    |createdAt  |timestamp  |
 
 ## WS_TOPIC
 |PK                 |SK                 |ATTR_NAME  |ATTR_TYPE  |
 |-                  |-                  |-          |-          |
-|`WS_TOPIC#<str>`   |`WS_CONN_ID#<str>` |userId     |nanoid     |
+|`WS_TOPIC#<str>`   |`WS_CONN#<str>`    |userId     |nanoid     |
 
 
 ---

@@ -12,9 +12,9 @@ use axum_extra::{
 };
 
 #[derive(Debug)]
-pub struct ApiAuthGuard(pub AccessClaims);
+pub struct AuthGuard(pub AccessClaims);
 
-impl<S> FromRequestParts<S> for ApiAuthGuard
+impl<S> FromRequestParts<S> for AuthGuard
 where
     ArcAppState: FromRef<S>,
     S: Send + Sync,
@@ -28,15 +28,12 @@ where
             )
             .await
             .map_err(|err| anyhow!(err))?;
-        let token = util::config::get_config_jwt_access_keys()
-            .decode::<AccessClaims>(bearer_token.token())
-            .map_err(|err| anyhow!(err))?;
-
-        Ok(Self(token.claims))
+        let token = util::jwt::decode_access(&bearer_token.token()).map_err(|err| anyhow!(err))?;
+        Ok(Self(token))
     }
 }
 
-impl<S> OptionalFromRequestParts<S> for ApiAuthGuard
+impl<S> OptionalFromRequestParts<S> for AuthGuard
 where
     ArcAppState: FromRef<S>,
     S: Send + Sync,

@@ -48,3 +48,8 @@ pub fn generate_refresh_token(
     let refresh_token = refr.encode(&refresh_claims)?;
     Ok(refresh_token)
 }
+
+pub fn decode_access(jwt: &str) -> Result<AccessClaims, jsonwebtoken::errors::Error> {
+    let token = super::config::get_config_jwt_access_keys().decode::<AccessClaims>(jwt)?;
+    Ok(token.claims)
+}

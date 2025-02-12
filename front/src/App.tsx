@@ -5,8 +5,8 @@ import Test from './page/test/Test.tsx'
 import Home from './page/Home.tsx'
 import Room from './page/Room.tsx'
 import NotFound from './page/NotFound.tsx'
-import { useEffect, useState } from 'react'
-import { useWsStore } from './store/store.ts'
+import { useEffect, useMemo, useState } from 'react'
+import { useAuthStore, useWsStore } from './store/store.ts'
 import useWebSocket, { ReadyState } from 'react-use-websocket'
 function App() {
 
@@ -82,6 +82,7 @@ function App() {
       console.log('end')
     }
   },[])
+  useInitialAuthCheck();
   return (
     <BrowserRouter basename='/gomoku'>
       <Routes>
@@ -100,3 +101,28 @@ function App() {
 }
 
 export default App
+
+
+const useInitialAuthCheck = () =>{
+  const { setIsInitEnd, setAccessToken } = useAuthStore();
+  useMemo(() => {
+    const refresh = async () => {
+      console.log('refersh')
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/auth/access/refresh`, {
+          credentials: 'include',
+          method: 'POST',
+        })
+        const json = await res.json();
+        const accessToken = json.data.accessToken;
+        // console.log(accessToken)
+        setAccessToken(accessToken)
+      } catch (error) {
+        console.error(error)
+      }
+      setIsInitEnd(true)
+    }
+
+    refresh();
+  }, [])
+}
