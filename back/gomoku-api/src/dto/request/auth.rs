@@ -12,3 +12,8 @@ pub struct SignupGuest {
     ))]
     pub nick_name: String,
 }
+#[derive(Debug, Serialize, Deserialize, ToSchema, Validate)]
+#[serde(rename_all = "camelCase")]
+pub struct AccessTokenRefresh {
+    pub refresh_token: Option<String>,
+}

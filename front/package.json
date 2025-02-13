@@ -11,14 +11,18 @@
   "dependencies": {
     "@react-three/drei": "^10.0.0-rc.2",
     "@react-three/fiber": "^9.0.0-alpha.8",
+    "@types/set-cookie-parser": "^2.4.10",
+    "jsonwebtoken": "^9.0.2",
     "next": "15.1.7",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-use-websocket": "^4.13.0",
+    "set-cookie-parser": "^2.7.1",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/jsonwebtoken": "^9.0.8",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

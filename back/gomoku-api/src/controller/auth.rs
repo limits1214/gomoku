@@ -1,7 +1,11 @@
 use crate::{
     config::app_state::ArcAppState,
     constant::REFRESH_TOKEN,
-    dto::{self, request::auth::SignupGuest, response::ApiResponse},
+    dto::{
+        self,
+        request::auth::{AccessTokenRefresh, SignupGuest},
+        response::ApiResponse,
+    },
     error::HandlerError,
     service, util,
 };
@@ -34,11 +38,9 @@ pub async fn signup_guest(
 ) -> Result<impl IntoResponse, HandlerError> {
     j.validate()?;
 
-    //
     let (access_token, refresh_token_hash) =
         service::auth::signup_guest(&dynamo_client, j.nick_name).await?;
 
-    //
     let ref_token_cookie = util::cookie::generate_refresh_token_cookie(refresh_token_hash);
     let jar: CookieJar = jar.add(ref_token_cookie);
     let ret = ApiResponse::success(dto::response::auth::AccessToken { access_token });
@@ -49,17 +51,21 @@ pub async fn signup_guest(
 pub async fn access_token_refresh(
     jar: CookieJar,
     dynamo_client: State<aws_sdk_dynamodb::Client>,
+    Json(j): Json<AccessTokenRefresh>,
 ) -> Result<impl IntoResponse, HandlerError> {
     let refresh_token = match jar.get(REFRESH_TOKEN) {
-        Some(rt) => rt.value(),
+        Some(rt) => rt.value().to_string(),
         None => {
-            return Ok((
-                jar,
-                Json(ApiResponse::success(json!({
-                    "msg": "RefreshTokenEmpty"
-                }))),
-            )
-                .into_response())
+            let Some(rt) = j.refresh_token else {
+                return Ok((
+                    jar,
+                    Json(ApiResponse::success(json!({
+                        "msg": "RefreshTokenEmpty"
+                    }))),
+                )
+                    .into_response());
+            };
+            rt
         }
     };
     let access_token =

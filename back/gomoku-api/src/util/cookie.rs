@@ -8,8 +8,8 @@ pub fn generate_refresh_token_cookie(token_str: String) -> Cookie<'static> {
     let secure = super::config::get_cookie_secure();
     Cookie::build((REFRESH_TOKEN, token_str))
         .path("/")
-        .http_only(true)
-        .same_site(SameSite::None)
+        // .http_only(true)
+        // .same_site(SameSite::None)
         .secure(*secure)
         .max_age(Duration::seconds(*refr_time))
         .build()
@@ -19,8 +19,8 @@ pub fn generate_refresh_token_remove_cookie() -> Cookie<'static> {
     let secure = super::config::get_cookie_secure();
     Cookie::build((REFRESH_TOKEN, ""))
         .path("/")
-        .http_only(true)
-        .same_site(SameSite::None)
+        // .http_only(true)
+        // .same_site(SameSite::None)
         .secure(*secure)
         .max_age(Duration::seconds(0))
         .build()
