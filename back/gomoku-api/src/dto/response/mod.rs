@@ -1,7 +1,7 @@
 use serde::Serialize;
 use utoipa::ToSchema;
-
 pub mod auth;
+pub mod room;
 pub mod user;
 
 #[derive(Serialize, ToSchema, Debug)]

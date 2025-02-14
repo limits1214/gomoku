@@ -19,8 +19,8 @@ hyper = "1.5.2"
 tower-http = { version = "0.6.2", features = ["full"] }
 config = "0.15.7"
 
-nanoid = "0.4.0"
-rand = "0.8.5"
+nanoid = "0.4"
+rand = "0.8"
 
 # open api
 utoipa = { version = "5.3.1", features = [
@@ -46,8 +46,10 @@ validator = { version = "0.19.0", features = [
 regex = { version = "1.11.1", default-features = false }
 
 # auth
-jsonwebtoken = "9.3.0"
-argon2 = "0.5.3"
-sha2 = "0.10.8"
-hex = "0.4.3"
-oauth2 = { version = "4.4.2" }
+jsonwebtoken = "9.3"
+argon2 = "0.5"
+sha2 = "0.10"
+hex = "0.4"
+oauth2 = { version = "4.4" }
+aes-gcm = "0.10"
+base64 = "0.22"

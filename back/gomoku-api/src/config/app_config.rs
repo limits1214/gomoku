@@ -6,7 +6,10 @@ use jsonwebtoken::{DecodingKey, EncodingKey, Header, TokenData, Validation};
 use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 pub static APP_CONFIG: OnceLock<Arc<AppConfig>> = OnceLock::new();
-
+#[derive(Debug, Deserialize)]
+pub struct SecSettings {
+    pub aes128key: String,
+}
 #[derive(Debug, Deserialize)]
 pub struct DynamoSettings {
     pub table_name: String,
@@ -27,6 +30,7 @@ pub struct Settings {
     pub dynamo: DynamoSettings,
     pub jwt: JwtSettings,
     pub cookie: CookieSettings,
+    pub sec: SecSettings,
 }
 
 impl Settings {

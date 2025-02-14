@@ -1,3 +1,4 @@
+pub mod aes;
 pub mod config;
 pub mod cookie;
 pub mod dynamo;

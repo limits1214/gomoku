@@ -11,3 +11,6 @@ jwt_refresh_time = 86400
 
 [cookie]
 secure = false
+
+[sec]
+aes128key = "0123456789abcdef"

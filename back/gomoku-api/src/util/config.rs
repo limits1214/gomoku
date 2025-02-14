@@ -46,3 +46,7 @@ pub fn get_aws_config() -> &'static aws_config::SdkConfig {
 pub fn get_cookie_secure() -> &'static bool {
     &APP_CONFIG.get().unwrap().settings.cookie.secure
 }
+
+pub fn get_aes128key() -> &'static str {
+    &APP_CONFIG.get().unwrap().settings.sec.aes128key
+}

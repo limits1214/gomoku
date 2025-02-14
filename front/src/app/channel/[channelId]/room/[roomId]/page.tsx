@@ -1,3 +1,5 @@
+import Room from "@/component/Room";
+
 interface ChannelRoomPageParam {
   params: Promise<{channelId: string; roomId: string}>
 }
@@ -5,9 +7,10 @@ interface ChannelRoomPageParam {
 const ChannelRoomPage = async ({ params }: ChannelRoomPageParam) => {
   const param = await params;
   return (
-    <div>
+    <div >
       ChannelRoomPage
       {param.channelId} - {param.roomId}
+      <Room channdlId={param.channelId} roomId={param.roomId}/>
     </div>
   )
 }

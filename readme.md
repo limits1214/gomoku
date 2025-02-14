@@ -37,7 +37,8 @@ url: https://gogomoku.vercel.app/
 ## CHANNEL
 |PK                 |SK             |ATTR_NAME  |ATTR_TYPE  |
 |-                  |-              |-          |-          |
-|`CHANNEL#<str>`    |`ROOM#<num>`   |room       |nanoid     |
+|`CHANNEL#<str>`    |`ROOM#<num>`   |roomId     |nanoid     |
+|                   |               |roomNum    |number     |
 
 ## ROOM
 |PK             |SK                     |ATTR_NAME      |ATTR_TYPE  |
@@ -45,6 +46,8 @@ url: https://gogomoku.vercel.app/
 |`ROOM#<nanoid>`|`INFO`                 |playerBlack    |nanoid     |
 |               |                       |playerWhite    |nanoid     |
 |               |                       |channel        |string     |
+|               |                       |roomName       |string     |
+|               |                       |roomId         |string     |
 |               |`HST#<timestamp>`      |type           |string     |
 |               |                       |event          |map        |
 
