@@ -2,7 +2,8 @@
 
 import { cookies } from "next/headers";
 import setCookie from 'set-cookie-parser';
-import jwt, { JwtPayload } from 'jsonwebtoken'
+import * as jose from 'jose'
+
 export async function RefreshToken() {
   const cookieStore = await cookies()
  
@@ -51,9 +52,10 @@ export const SignupGuestAction = async (nickName: string) => {
     const json = await res.json();
     // console.log(json)
     const accessToken = json.data.accessToken;
-    const decoded = jwt.decode(accessToken, {complete: true});
-    const payload = decoded!.payload as JwtPayload;
-    const accMaxAge = payload.exp! - payload.iat!
+    // const decoded = jwt.decode(accessToken, {complete: true});
+    const decoded = jose.decodeJwt(accessToken)
+    // const payload = decoded!.payload as JwtPayload;
+    const accMaxAge = decoded.exp! - decoded.iat!
     cookieStore.set('access_token', accessToken, {
       httpOnly: true,
       maxAge: accMaxAge,

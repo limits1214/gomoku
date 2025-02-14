@@ -1,7 +1,7 @@
 
 import { cookies } from "next/headers";
 import {  NextResponse } from "next/server"
-import jwt, { JwtPayload } from 'jsonwebtoken'
+import * as jose from 'jose'
 
 export async function middleware() {
   // console.log(request.url)
@@ -15,10 +15,13 @@ export async function middleware() {
     const accessTokenCookie = cookieStore.get('access_token');
     if (accessTokenCookie) {
       const accessToken = accessTokenCookie.value
-      const decoded = jwt.decode(accessToken, {complete: true});
+      
+      // const decoded = jwt.decode(accessToken, {complete: true});
+      const decoded = jose.decodeJwt(accessToken)
+      
       if (decoded) {
-        const payload = decoded.payload as JwtPayload;
-        const exp = payload.exp!;
+        // const payload = decoded.payload as JwtPayload;
+        const exp = decoded.exp!
         const now = Math.floor(Date.now() / 1000);
         // console.log('now: ', now, 'exp', payload.exp)
         // 10초 넉넉히
@@ -51,9 +54,9 @@ export async function middleware() {
           const json = await res.json();
         
           const accessToken = json.data.accessToken;
-          const decoded = jwt.decode(accessToken, {complete: true});
-          const payload = decoded!.payload as JwtPayload;
-          const accMaxAge = payload.exp! - payload.iat!
+          const decoded = jose.decodeJwt(accessToken)
+          
+          const accMaxAge = decoded.exp! - decoded.iat!
           cookieStore.set('access_token', accessToken, {
             httpOnly: true,
             maxAge: accMaxAge,

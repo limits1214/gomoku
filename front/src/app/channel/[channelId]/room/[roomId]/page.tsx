@@ -1,4 +1,8 @@
-const ChannelRoomPage = async ({params}: {params: {channelId: string; roomId: string}}) => {
+interface ChannelRoomPageParam {
+  params: Promise<{channelId: string; roomId: string}>
+}
+
+const ChannelRoomPage = async ({ params }: ChannelRoomPageParam) => {
   const param = await params;
   return (
     <div>
