@@ -103,26 +103,18 @@ async fn handler(request: Request) -> Result<Response<Body>, Error> {
                     .status(400)
                     .body(Body::Text(json!({ "status": "disconnect" }).to_string()))?);
             };
-            // let a = api_gw_client
-            //     .get_connection()
-            //     .connection_id("connection_id")
-            //     .send()
-            //     .await;
-            // match a {
-            //     Ok(a) => {
-            //         tracing::info!("get connection: {a:?}");
-            //     }
-            //     Err(err) => {
-            //         tracing::error!("$connect get connectoin_id err: {err}");
-            //     }
-            // }
             match serde_json::from_slice::<WsRequestMessage>(&body) {
                 Ok(body) => match body {
                     WsRequestMessage::Echo { msg } => {
                         handler::echo::echo_handler(api_gw_client, connection_id, msg).await?;
                     }
-                    WsRequestMessage::WsInitial { jwt } => {
-                        handler::default::ws_initial(connection_id, http_client, jwt).await?;
+                    WsRequestMessage::TopicSubscribe { topic } => {
+                        handler::default::topic_subscribe(connection_id, http_client, &topic)
+                            .await?;
+                    }
+                    WsRequestMessage::TopicUnSubscribe { topic } => {
+                        handler::default::topic_unsubscribe(connection_id, http_client, &topic)
+                            .await?;
                     }
                 },
                 Err(err) => {

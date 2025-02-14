@@ -7,5 +7,6 @@ use validator::Validate;
 pub struct RoomInfo {
     pub room_name: String,
     pub room_id: String,
+    pub room_num: String,
     pub channel: String,
 }

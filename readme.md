@@ -54,9 +54,9 @@ url: https://gogomoku.vercel.app/
 ## WS_CONN
 |PK                 |SK                 |ATTR_NAME  |ATTR_TYPE  |
 |-                  |-                  |-          |-          |
-|`WS_CONN#<str>`    |`NOUSER`           |createdAt  |timestamp  |
-|`WS_CONN#<str>`    |`USER#<nanoid>`    |createdAt  |timestamp  |
-|                   |                   |jwt        |string     |
+|`WS_CONN#<str>`    |`INFO`             |createdAt  |timestamp  |
+|                   |                   |wsToken    |string?    |
+|                   |                   |userId     |nanoid?    |
 |`USER#<nanoid>`    |`WS_CONN#<str>`    |createdAt  |timestamp  |
 
 ## WS_TOPIC

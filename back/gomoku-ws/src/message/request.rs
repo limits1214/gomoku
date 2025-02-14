@@ -7,7 +7,9 @@ pub enum WsRequestMessage {
     #[serde(rename_all = "camelCase")]
     Echo { msg: String },
     #[serde(rename_all = "camelCase")]
-    WsInitial { jwt: Option<String> },
+    TopicSubscribe { topic: String },
+    #[serde(rename_all = "camelCase")]
+    TopicUnSubscribe { topic: String },
 }
 
 #[test]

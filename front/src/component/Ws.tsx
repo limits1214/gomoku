@@ -17,9 +17,9 @@ const Ws = () => {
         onOpen: () => {
           console.log('ws open')
           // const obj = {
-          //     t: "echo",
+          //     t: "topicSubscribe",
           //     d: {
-          //       msg: "accessToken"
+          //       topic: "Hello"
           //     }
           // }
           // sendMessage(JSON.stringify(obj));

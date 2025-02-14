@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use aws_sdk_dynamodb::types::AttributeValue;
 use chrono::Local;
-use lambda_http::tracing::{self};
 use nanoid::nanoid;
 
 use crate::{
@@ -26,8 +25,8 @@ pub async fn create_room(
         .expression_attribute_values(":SK", AttributeValue::S("ROOM#".to_string()))
         .send()
         .await?;
-    tracing::info!("channel output {output:?}");
-    let mut room_num = 0;
+    // tracing::info!("channel output {output:?}");
+    let mut room_num = 1;
     if let Some(items) = output.items {
         if let Some(a) = items.last() {
             let rn = a.get("roomNum");
@@ -95,6 +94,7 @@ pub async fn room_list(
         .expression_attribute_values(":SK", AttributeValue::S("ROOM#".to_string()))
         .set_exclusive_start_key(start_key)
         .limit(2)
+        .scan_index_forward(false)
         .send()
         .await?;
 
@@ -106,13 +106,14 @@ pub async fn room_list(
     let room_ids = items
         .iter()
         .map(|m: &std::collections::HashMap<String, AttributeValue>| {
+            let room_num = m.get("roomNum").unwrap().as_n().unwrap();
             let room_id = m.get("roomId").unwrap().as_s().unwrap();
-            room_id
+            (room_num, room_id)
         })
         .collect::<Vec<_>>();
 
     let mut room: Vec<HashMap<String, AttributeValue>> = Vec::new();
-    for room_id in room_ids {
+    for (room_num, room_id) in room_ids {
         let response = dynamo_client
             .get_item()
             .table_name(util::dynamo::get_table_name())
@@ -121,7 +122,11 @@ pub async fn room_list(
             .send()
             .await
             .unwrap();
-        let a = response.item.unwrap();
+        let mut a = response.item.unwrap();
+        a.insert(
+            "roomNum".to_string(),
+            AttributeValue::N(room_num.to_string()),
+        );
         room.push(a);
     }
 
@@ -131,10 +136,12 @@ pub async fn room_list(
             let channel = m.get("channel").unwrap().as_s().unwrap();
             let room_name = m.get("roomName").unwrap().as_s().unwrap();
             let room_id = m.get("roomId").unwrap().as_s().unwrap();
+            let room_num = m.get("roomNum").unwrap().as_n().unwrap();
             RoomInfo {
                 channel: channel.to_string(),
                 room_id: room_id.to_string(),
                 room_name: room_name.to_string(),
+                room_num: room_num.to_string(),
             }
         })
         .collect::<Vec<_>>();
