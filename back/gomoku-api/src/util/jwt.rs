@@ -1,6 +1,6 @@
 use time::{Duration, OffsetDateTime};
 
-use crate::model::jwt_claim::{AccessClaims, RefreshClaims};
+use crate::model::jwt_claim::{AccessClaims, RefreshClaims, WsClaims, WsTempClaims};
 
 pub struct GenAccessTokenArgs {
     pub uid: String,
@@ -51,5 +51,39 @@ pub fn generate_refresh_token(
 
 pub fn decode_access(jwt: &str) -> Result<AccessClaims, jsonwebtoken::errors::Error> {
     let token = super::config::get_config_jwt_access_keys().decode::<AccessClaims>(jwt)?;
+    Ok(token.claims)
+}
+
+pub fn generate_ws_temp_token(sub: &str) -> anyhow::Result<String> {
+    let now: OffsetDateTime = OffsetDateTime::now_utc();
+    let ws_temp_exp = 60;
+    let ws_temp_claims =
+        WsTempClaims::new(sub.to_string(), now + Duration::seconds(ws_temp_exp), now);
+    let ws_temp = super::config::get_config_jwt_access_keys();
+    let ws_temp_token = ws_temp.encode(&ws_temp_claims)?;
+    Ok(ws_temp_token)
+}
+
+pub fn decode_ws_temp(jwt: &str) -> anyhow::Result<WsTempClaims> {
+    let token = super::config::get_config_jwt_access_keys().decode::<WsTempClaims>(jwt)?;
+    Ok(token.claims)
+}
+
+pub fn generate_ws_token(sub: &str, connection_id: &str) -> anyhow::Result<String> {
+    let now: OffsetDateTime = OffsetDateTime::now_utc();
+    let ws_exp = 60 * 60 * 60 * 24 * 365;
+    let ws_claims = WsClaims::new(
+        sub.to_string(),
+        now + Duration::seconds(ws_exp),
+        now,
+        connection_id.to_string(),
+    );
+    let ws = super::config::get_config_jwt_refresh_keys();
+    let ws_token = ws.encode(&ws_claims)?;
+    Ok(ws_token)
+}
+
+pub fn decode_ws(jwt: &str) -> anyhow::Result<WsClaims> {
+    let token = super::config::get_config_jwt_refresh_keys().decode::<WsClaims>(jwt)?;
     Ok(token.claims)
 }

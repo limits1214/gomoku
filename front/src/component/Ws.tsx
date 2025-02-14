@@ -17,9 +17,9 @@ const Ws = () => {
         onOpen: () => {
           console.log('ws open')
           // const obj = {
-          //     t: "wsInitial",
+          //     t: "echo",
           //     d: {
-          //       jwt: accessToken
+          //       msg: "accessToken"
           //     }
           // }
           // sendMessage(JSON.stringify(obj));
@@ -41,8 +41,17 @@ const Ws = () => {
     // if (isInitEnd) {
     console.log(process.env.NEXT_PUBLIC_WS_URL)
     const wsurl = process.env.NEXT_PUBLIC_WS_URL as string;
-      setSocketUrl(wsurl);
+      // setSocketUrl(`${wsurl}?token=${}`);
     // }
+
+    const wsConnect = async () => {
+      const resp = await fetch('/api/ws/token');
+      const j = await resp.json()
+      const token = j.token;
+      setSocketUrl(`${wsurl}?token=${token}`);
+    }
+
+    wsConnect();
   }, [])
 
   useEffect(() =>{

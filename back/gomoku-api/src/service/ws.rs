@@ -4,6 +4,68 @@ use crate::{
 };
 use aws_sdk_dynamodb::types::AttributeValue;
 use chrono::Local;
+use lambda_http::tracing;
+
+pub async fn ws_token_verify(
+    dynamo_client: &aws_sdk_dynamodb::Client,
+    connection_id: &str,
+    sub: &str,
+) -> anyhow::Result<()> {
+    if sub == "Guest" {
+        let ws_conn_pk = format!("WS_CONN#{connection_id}");
+        let ws_conn_sk = format!("Guest");
+        let time = Local::now().to_rfc3339();
+        let map = DynamoMapHelper::new()
+            .insert_pk(ws_conn_pk)
+            .insert_sk(ws_conn_sk)
+            .insert_attr_s("createdAt", &time)
+            .build();
+
+        let output = dynamo_client
+            .put_item()
+            .table_name(util::dynamo::get_table_name())
+            .set_item(Some(map))
+            .send()
+            .await?;
+    } else {
+        let ws_token = util::jwt::generate_ws_token(sub, connection_id)?;
+        tracing::info!("get ws token: {ws_token}");
+        let user_id = sub;
+        let ws_conn_pk = format!("WS_CONN#{connection_id}");
+        let ws_conn_sk = format!("USER#{user_id}");
+        let time = Local::now().to_rfc3339();
+        let map = DynamoMapHelper::new()
+            .insert_pk(ws_conn_pk)
+            .insert_sk(ws_conn_sk)
+            .insert_attr_s("wsToken", &ws_token)
+            .insert_attr_s("createdAt", &time)
+            .build();
+
+        let output = dynamo_client
+            .put_item()
+            .table_name(util::dynamo::get_table_name())
+            .set_item(Some(map))
+            .send()
+            .await?;
+
+        let user_pk = format!("USER#{user_id}");
+        let user_sk = format!("WS_CONN#{connection_id}");
+        let map = DynamoMapHelper::new()
+            .insert_pk(user_pk)
+            .insert_sk(user_sk)
+            .insert_attr_s("createdAt", &time)
+            .build();
+
+        let output = dynamo_client
+            .put_item()
+            .table_name(util::dynamo::get_table_name())
+            .set_item(Some(map))
+            .send()
+            .await?;
+    }
+
+    Ok(())
+}
 
 // ws 최초 연결, connection_id, jwt 등록
 // case1: jwt 존재, case2: jwt 미존재
@@ -77,9 +139,9 @@ pub async fn ws_disconnect(
     // 2. WS_CONN 제거
     // 3. WS_TOPIC 제거(with broadcast?)
 
-    // 혹시 NOUSER 가 존재할수 있으니 지워준다.
+    // 혹시 Guest 가 존재할수 있으니 지워준다.
     let delete_ws_conn_pk = format!("WS_CONN#{connection_id}");
-    let delete_ws_conn_sk = format!("NOUSER");
+    let delete_ws_conn_sk = format!("Guest");
     let output = dynamo_client
         .delete_item()
         .table_name(util::dynamo::get_table_name())
@@ -105,15 +167,15 @@ pub async fn ws_disconnect(
         return Ok(());
     };
 
-    let Some(jwt) = row.get("jwt") else {
+    let Some(ws_token) = row.get("wsToken") else {
         return Ok(());
     };
 
-    let Ok(jwt) = jwt.as_s() else {
+    let Ok(ws_token) = ws_token.as_s() else {
         return Ok(());
     };
 
-    let claims = util::jwt::decode_access(jwt)?;
+    let claims = util::jwt::decode_ws(ws_token)?;
     let user_id = claims.sub;
 
     // WS_CONN 의 USER 제거

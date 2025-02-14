@@ -1,7 +1,13 @@
 use aws_config::Region;
 use aws_sdk_apigatewaymanagement::config;
-use gomoku_ws::{config::AppConfig, handler, message::request::WsRequestMessage};
-use lambda_http::{request::RequestContext, service_fn, tracing, Body, Error, Request, Response};
+use gomoku_ws::{
+    config::{AppConfig, APP_CONFIG},
+    handler,
+    message::request::WsRequestMessage,
+};
+use lambda_http::{
+    request::RequestContext, service_fn, tracing, Body, Error, Request, RequestExt, Response,
+};
 use serde_json::json;
 
 #[tokio::main]
@@ -42,6 +48,38 @@ async fn handler(request: Request) -> Result<Response<Body>, Error> {
 
     match route_key.as_str() {
         "$connect" => {
+            let Some(connection_id) = &ws.connection_id else {
+                tracing::warn!("default connection_id empty");
+                return Ok(Response::builder()
+                    .status(400)
+                    .body(Body::Text(json!({ "status": "disconnect" }).to_string()))?);
+            };
+
+            let qm = request.query_string_parameters();
+            let token = qm.first("token");
+            let Some(token) = token else {
+                return Ok(Response::builder()
+                    .status(400)
+                    .body(Body::Text(json!({ "msg": "token is empty" }).to_string()))?);
+            };
+
+            let base_url = &APP_CONFIG.get().unwrap().settings.api.url;
+            let url = format!("{base_url}/ws/temptoken/verify");
+            let res = http_client
+                .post(url)
+                .json(&json!({
+                    "token": token,
+                    "connectionId": connection_id,
+                }))
+                .send()
+                .await?;
+
+            if !res.status().is_success() {
+                return Ok(Response::builder()
+                    .status(400)
+                    .body(Body::Text(json!({ "status": "verify fail" }).to_string()))?);
+            }
+
             return Ok(Response::builder()
                 .status(200)
                 .body(Body::Text(json!({ "status": "connected" }).to_string()))?);
@@ -65,6 +103,19 @@ async fn handler(request: Request) -> Result<Response<Body>, Error> {
                     .status(400)
                     .body(Body::Text(json!({ "status": "disconnect" }).to_string()))?);
             };
+            // let a = api_gw_client
+            //     .get_connection()
+            //     .connection_id("connection_id")
+            //     .send()
+            //     .await;
+            // match a {
+            //     Ok(a) => {
+            //         tracing::info!("get connection: {a:?}");
+            //     }
+            //     Err(err) => {
+            //         tracing::error!("$connect get connectoin_id err: {err}");
+            //     }
+            // }
             match serde_json::from_slice::<WsRequestMessage>(&body) {
                 Ok(body) => match body {
                     WsRequestMessage::Echo { msg } => {

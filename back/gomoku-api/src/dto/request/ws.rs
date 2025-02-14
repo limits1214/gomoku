@@ -13,3 +13,10 @@ pub struct WsConnect {
 pub struct WsDisConnect {
     pub connection_id: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct WsTokenVerify {
+    pub token: String,
+    pub connection_id: String,
+}

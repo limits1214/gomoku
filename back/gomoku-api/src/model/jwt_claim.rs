@@ -86,3 +86,44 @@ impl RefreshClaims {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WsTempClaims {
+    pub sub: String,
+    pub exp: usize,
+    pub iat: usize,
+}
+impl WsTempClaims {
+    pub fn new(sub: String, exp: OffsetDateTime, iat: OffsetDateTime) -> Self {
+        Self {
+            sub,
+            exp: exp.unix_timestamp() as usize,
+            iat: iat.unix_timestamp() as usize,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct WsClaims {
+    pub sub: String,
+    pub exp: usize,
+    pub iat: usize,
+    pub connection_id: String,
+}
+impl WsClaims {
+    pub fn new(
+        sub: String,
+        exp: OffsetDateTime,
+        iat: OffsetDateTime,
+        connection_id: String,
+    ) -> Self {
+        Self {
+            sub,
+            exp: exp.unix_timestamp() as usize,
+            iat: iat.unix_timestamp() as usize,
+            connection_id,
+        }
+    }
+}

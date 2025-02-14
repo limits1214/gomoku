@@ -35,26 +35,37 @@ export async function middleware() {
 
     if (isCallRefresh) {
       console.log('refresh')
-      const res = await fetch(`${process.env.API_URL}/auth/access/refresh`, {
-        method: 'POST',
-        credentials: 'include',
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          refreshToken: refreshTokenCookie.value
-        })
-      });
+      try {
+        const res = await fetch(`${process.env.API_URL}/auth/access/refresh`, {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            refreshToken: refreshTokenCookie.value
+          })
+        });
 
-      const json = await res.json();
-      const accessToken = json.data.accessToken;
-      const decoded = jwt.decode(accessToken, {complete: true});
-      const payload = decoded!.payload as JwtPayload;
-      const accMaxAge = payload.exp! - payload.iat!
-      cookieStore.set('access_token', accessToken, {
-        httpOnly: true,
-        maxAge: accMaxAge,
-      });
+        if (res.ok) {
+          const json = await res.json();
+        
+          const accessToken = json.data.accessToken;
+          const decoded = jwt.decode(accessToken, {complete: true});
+          const payload = decoded!.payload as JwtPayload;
+          const accMaxAge = payload.exp! - payload.iat!
+          cookieStore.set('access_token', accessToken, {
+            httpOnly: true,
+            maxAge: accMaxAge,
+          });
+        } else {
+          console.error('refresh error', res.status)
+          cookieStore.delete('refresh_token')
+        }
+      } catch(error) {
+        console.error('error', error)
+        cookieStore.delete('refresh_token')
+      }
     }
   }
   const response = NextResponse.next()
