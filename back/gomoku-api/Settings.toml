@@ -1,6 +1,9 @@
 [dynamo]
 table_name = "Test"
 
+[gw_ws]
+connections_url = "https://0gnlyzkqd6.execute-api.ap-northeast-2.amazonaws.com/dev"
+
 [jwt]
 jwt_access_secret = "access_access_access_access_access_access_access_access_access_access"
 jwt_refresh_secret = "refresh_refresh_refresh_refresh_refresh_refresh_refresh_refresh_refresh"

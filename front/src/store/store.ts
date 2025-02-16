@@ -5,7 +5,7 @@ import { devtools } from "zustand/middleware";
 interface WsState {
   lastWsMessage: object,
   setLastWsMessage: (lastMessage: object) => void,
-  sendWsMessage: SendMessage,
+  sendWsMessage: SendMessage | null,
   setSendWsMessage: (sendMessage: SendMessage) => void,
 }
 

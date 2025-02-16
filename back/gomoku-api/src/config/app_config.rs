@@ -7,6 +7,10 @@ use serde::{de::DeserializeOwned, Deserialize, Serialize};
 
 pub static APP_CONFIG: OnceLock<Arc<AppConfig>> = OnceLock::new();
 #[derive(Debug, Deserialize)]
+pub struct GwWsSettings {
+    pub connections_url: String,
+}
+#[derive(Debug, Deserialize)]
 pub struct SecSettings {
     pub aes128key: String,
 }
@@ -31,6 +35,7 @@ pub struct Settings {
     pub jwt: JwtSettings,
     pub cookie: CookieSettings,
     pub sec: SecSettings,
+    pub gw_ws: GwWsSettings,
 }
 
 impl Settings {

@@ -15,3 +15,9 @@ pub struct RoomList {
     pub channel: String,
     pub pagination_key: Option<String>,
 }
+#[derive(Debug, Serialize, Deserialize, ToSchema, Validate)]
+#[serde(rename_all = "camelCase")]
+pub struct ChannelRoomInfo {
+    pub channel: String,
+    pub room_num: String,
+}

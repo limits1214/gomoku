@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Query, State},
+    extract::{Path, Query, State},
     response::IntoResponse,
     routing::{get, post},
     Json, Router,
@@ -10,7 +10,7 @@ use utoipa::OpenApi;
 use crate::{
     config::app_state::ArcAppState,
     dto::{
-        request::room::{CreateRoom, RoomList},
+        request::room::{ChannelRoomInfo, CreateRoom, RoomList},
         response::ApiResponse,
     },
     error::HandlerError,
@@ -21,11 +21,13 @@ pub fn room_router(_state: ArcAppState) -> Router<ArcAppState> {
     Router::new()
         .route("/room/create", post(create_room))
         .route("/room/list", get(room_list))
+        .route("/room/info/{roomId}", get(room_info))
+        .route("/room/info/channelroom", get(channel_room_info))
 }
 
 #[derive(OpenApi)]
 #[openapi(
-    paths(create_room, room_list),
+    paths(create_room, room_list, room_info, channel_room_info),
     tags(
         (name = "room", description = "room desc"),
     ),
@@ -57,8 +59,42 @@ async fn room_list(
     let room_list = service::room::room_list(&dynamo_client, &j.channel, j.pagination_key).await?;
     let data = json!({
         "list": room_list.0,
-        "pagination_key": room_list.1
+        "paginationKey": room_list.1
     });
     let ret = ApiResponse::success(data);
+    Ok(Json(ret))
+}
+#[utoipa::path(
+    tag = "room",
+    get,
+    path = "/info/{roomId}",
+    params(
+        ("roomId" = String, Path),
+    )
+)]
+async fn room_info(
+    dynamo_client: State<aws_sdk_dynamodb::Client>,
+    Path(p): Path<String>,
+) -> Result<impl IntoResponse, HandlerError> {
+    let room_info = service::room::room_info(&dynamo_client, &p).await?;
+    let ret = ApiResponse::success(room_info);
+    Ok(Json(ret))
+}
+#[utoipa::path(
+    tag = "room",
+    get,
+    path = "/info/channelroom",
+    params(
+        ("channel" = String, Query, example = 1),
+        ("roomNum" = String, Query, example = 1),
+    )
+)]
+async fn channel_room_info(
+    dynamo_client: State<aws_sdk_dynamodb::Client>,
+    Query(q): Query<ChannelRoomInfo>,
+) -> Result<impl IntoResponse, HandlerError> {
+    let room_info =
+        service::room::channel_room_info(&dynamo_client, &q.channel, &q.room_num).await?;
+    let ret = ApiResponse::success(room_info);
     Ok(Json(ret))
 }

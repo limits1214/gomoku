@@ -1,4 +1,4 @@
-use crate::config::app_config::{DynamoSettings, JwtKeys, APP_CONFIG};
+use crate::config::app_config::{DynamoSettings, GwWsSettings, JwtKeys, APP_CONFIG};
 
 // pub fn get_config_app_server_port() -> &'static u32 {
 //     &APP_CONFIG.get().unwrap().settings.app.server_port
@@ -41,6 +41,10 @@ pub fn get_dynamo_settings() -> &'static DynamoSettings {
 
 pub fn get_aws_config() -> &'static aws_config::SdkConfig {
     &APP_CONFIG.get().unwrap().aws_config
+}
+
+pub fn get_gw_ws_settings() -> &'static GwWsSettings {
+    &APP_CONFIG.get().unwrap().settings.gw_ws
 }
 
 pub fn get_cookie_secure() -> &'static bool {
