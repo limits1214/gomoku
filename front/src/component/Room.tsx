@@ -1,14 +1,26 @@
 'use client'
 import { useWsStore } from '@/store/store';
-import React, { use, useEffect, useState } from 'react'
+import React, {  useEffect, useState } from 'react'
 
 
-const Room = ({channelId, roomId}: {channdlId: string, roomId: string}) => {
+const Room = ({channel, roomNum}: {channel: string, roomNum: string}) => {
   const {sendWsMessage, lastWsMessage} = useWsStore();
 
   useEffect(() => {
     // fetch room info
-  }, [])
+    const a = async () => {
+      console.log('channel', channel)
+      const params = new URLSearchParams({
+        channel,
+        roomNum
+      });
+      const queryString = params.toString();
+      const res = await fetch(`/api/channelroom?${queryString}`)
+      const j = await res.json();
+      console.log('j', j)
+    }
+    a();
+  }, [channel, roomNum])
 
   useEffect(() => {
     if (sendWsMessage) {
