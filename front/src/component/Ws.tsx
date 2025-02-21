@@ -63,7 +63,7 @@ const Ws = () => {
 
   useEffect(() => {
     if (lastMessage != null) {
-      console.log('lastMessage: ', lastMessage.data)
+      // console.log('lastMessage: ', lastMessage.data)
       try {
         const json = JSON.parse(lastMessage.data );
         setLastWsMessage(json)

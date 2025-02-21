@@ -18,7 +18,7 @@ export default async function Home() {
   const j = await res.json();
   const roomList = j.data.list as RoomInfo[];
   // todo pagination with more btn
-  const paginationKey = j.data.paginationKey as string | null
+  // const paginationKey = j.data.paginationKey as string | null
   return (
     <div>
       <SignupGuest/>

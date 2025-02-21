@@ -1,42 +1,55 @@
 'use client'
 import { useWsStore } from '@/store/store';
+import Link from 'next/link';
 import React, {  useEffect, useState } from 'react'
 
+interface RoomParam {
+  roomId: string,
+  roomName: string
+}
 
-const Room = ({channel, roomNum}: {channel: string, roomNum: string}) => {
+
+const Room = ({roomId, roomName}: RoomParam) => {
   const {sendWsMessage, lastWsMessage} = useWsStore();
 
   useEffect(() => {
     // fetch room info
-    const a = async () => {
-      console.log('channel', channel)
-      const params = new URLSearchParams({
-        channel,
-        roomNum
-      });
-      const queryString = params.toString();
-      const res = await fetch(`/api/channelroom?${queryString}`)
-      const j = await res.json();
-      console.log('j', j)
+    // const a = async () => {
+    //   console.log('channel', channel)
+    //   const params = new URLSearchParams({
+    //     channel,
+    //     roomNum
+    //   });
+    //   const queryString = params.toString();
+    //   const res = await fetch(`/api/channelroom?${queryString}`)
+    //   const j = await res.json();
+    //   console.log('j', j)
+    // }
+    // a();
+    if (sendWsMessage) {
+      console.log('topic subscribe', roomId, roomName)
     }
-    a();
-  }, [channel, roomNum])
+
+    return () => {
+      console.log('todo topic unsubscribe')
+    }
+  }, [roomId, roomName, sendWsMessage])
 
   useEffect(() => {
     if (sendWsMessage) {
-      const obj = {
-        t: 'echo',
-        d: {
-          msg: 'msg'
-        }
-      };
-      sendWsMessage(JSON.stringify(obj));
+      // const obj = {
+      //   t: 'echo',
+      //   d: {
+      //     msg: 'msg'
+      //   }
+      // };
+      // sendWsMessage(JSON.stringify(obj));
     }
   }, [sendWsMessage])
 
   useEffect(() => {
     if (lastWsMessage) {
-      console.log('lastMessage', lastWsMessage)
+      console.log('lastMessage z', lastWsMessage)
     }
   }, [lastWsMessage])
 
@@ -53,6 +66,7 @@ const Room = ({channel, roomNum}: {channel: string, roomNum: string}) => {
 
   return (
     <div className=''>
+      <Link href={"/"}>home</Link>
       <div className=''>
 
       </div>
