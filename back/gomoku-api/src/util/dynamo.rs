@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use aws_sdk_dynamodb::types::AttributeValue;
+use aws_sdk_dynamodb::{primitives::Blob, types::AttributeValue};
 use serde_json::Value;
 
 use crate::constant::{PK, SK};
@@ -64,6 +64,10 @@ pub fn str_to_last_evaluated_key(key: Option<&str>) -> Option<HashMap<String, At
         })
         .collect::<HashMap<_, _>>();
     Some(res)
+}
+
+pub fn json_value_to_blob(value: serde_json::Value) -> anyhow::Result<Blob> {
+    Ok(serde_json::to_value(value)?.to_string().into_bytes().into())
 }
 
 #[test]

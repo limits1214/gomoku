@@ -27,11 +27,24 @@ const Room = ({roomId, roomName}: RoomParam) => {
     // }
     // a();
     if (sendWsMessage) {
-      console.log('topic subscribe', roomId, roomName)
+      const obj = {
+        t: 'topicSubscribe',
+        d: {
+          topic: `ROOM#${roomId}`
+        }
+      };
+      sendWsMessage(JSON.stringify(obj));
     }
-
     return () => {
-      console.log('todo topic unsubscribe')
+      if (sendWsMessage) {
+        const obj = {
+          t: 'topicUnSubscribe',
+          d: {
+            topic: `ROOM#${roomId}`
+          }
+        };
+        sendWsMessage(JSON.stringify(obj));
+      }
     }
   }, [roomId, roomName, sendWsMessage])
 
@@ -59,6 +72,24 @@ const Room = ({roomId, roomName}: RoomParam) => {
 
   const handleChatSend = () => {
     console.log(chat)
+    if (sendWsMessage) {
+      const obj = {
+        t: 'roomChat',
+        d: {
+          msg: chat,
+          roomId
+        }
+      };
+      sendWsMessage(JSON.stringify(obj));
+
+      const obj2 = {
+        t: 'echo',
+        d: {
+          msg: 'msg'
+        }
+      };
+      sendWsMessage(JSON.stringify(obj2));
+    }
   }
   const [chat, setChat] = useState("");
 

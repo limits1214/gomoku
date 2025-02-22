@@ -2,11 +2,20 @@
 resolver = "2"
 members = ["gomoku-ws", "gomoku-api", "gomoku-q"]
 
+# [profile.release]
+# opt-level = "z"         # 크기 최적화 (z) 또는 성능 최적화 (3)
+# lto = true
+# codegen-units = 1       # 단일 코드 생성 유닛 (최대 최적화)
+# panic = "abort"         # 패닉 발생 시 종료 (메모리 절약)
+# strip = "symbols"       # 디버그 정보 제거
+# overflow-checks = false # 산술 오버플로우 검사 비활성화 (런타임 속도 향상)
+# incremental = false     # 증분 빌드 비활성화 (최적화된 빌드 생성)
+
 [profile.release]
-opt-level = "z"         # 크기 최적화 (z) 또는 성능 최적화 (3)
-lto = true
-codegen-units = 1       # 단일 코드 생성 유닛 (최대 최적화)
-panic = "abort"         # 패닉 발생 시 종료 (메모리 절약)
-strip = "symbols"       # 디버그 정보 제거
-overflow-checks = false # 산술 오버플로우 검사 비활성화 (런타임 속도 향상)
-incremental = false     # 증분 빌드 비활성화 (최적화된 빌드 생성)
+opt-level = 3           # ✅ 성능 최적화 (최대 최적화)
+lto = "fat"             # ✅ 전체 링크 타임 최적화 (더 느리지만 최적화 극대화)
+codegen-units = 1       # ✅ 최적화 강화를 위해 코드 생성 유닛을 1로 설정
+panic = "abort"         # ✅ 패닉 발생 시 종료 (바이너리 크기 절약)
+strip = "symbols"       # ✅ 디버그 심볼 제거 (바이너리 크기 감소)
+overflow-checks = false # ✅ 산술 오버플로우 검사 비활성화 (속도 향상)
+incremental = false     # ✅ 증분 빌드 비활성화 (최적화된 빌드 생성)

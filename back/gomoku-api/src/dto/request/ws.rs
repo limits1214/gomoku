@@ -32,3 +32,10 @@ pub struct WsGetToken {
 pub struct WsTopic {
     pub topic: String,
 }
+
+#[derive(Debug, Serialize, Deserialize, ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct WsRoomChat {
+    pub msg: String,
+    pub room_id: String,
+}

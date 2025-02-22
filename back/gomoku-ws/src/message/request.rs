@@ -10,6 +10,8 @@ pub enum WsRequestMessage {
     TopicSubscribe { topic: String },
     #[serde(rename_all = "camelCase")]
     TopicUnSubscribe { topic: String },
+    #[serde(rename_all = "camelCase")]
+    RoomChat { msg: String, room_id: String },
 }
 
 #[test]

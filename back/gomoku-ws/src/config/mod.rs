@@ -22,14 +22,23 @@ impl AppConfig {
         Self { settings }
     }
 }
-
+#[derive(Debug, Deserialize)]
+pub struct DynamoSettings {
+    pub table_name: String,
+}
 #[derive(Debug, Deserialize)]
 pub struct ApiSettings {
     pub url: String,
 }
 #[derive(Debug, Deserialize)]
+pub struct GwWsSettings {
+    pub connections_url: String,
+}
+#[derive(Debug, Deserialize)]
 pub struct Settings {
     pub api: ApiSettings,
+    pub gw_ws: GwWsSettings,
+    pub dynamo: DynamoSettings,
 }
 
 impl Settings {

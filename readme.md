@@ -57,6 +57,7 @@ url: https://gogomoku.vercel.app/
 |`WS_CONN#<str>`    |`INFO`             |createdAt  |timestamp  |
 |                   |                   |wsToken    |string?    |
 |                   |                   |userId     |nanoid?    |
+|                   |`WS_TOPIC#<str>`   |userId     |nanoid     |
 |`USER#<nanoid>`    |`WS_CONN#<str>`    |createdAt  |timestamp  |
 
 ## WS_TOPIC

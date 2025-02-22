@@ -2,8 +2,10 @@ use crate::{
     constant::{PK, SK},
     util::{self, dynamo::DynamoMapHelper},
 };
-use aws_sdk_dynamodb::types::AttributeValue;
+use aws_sdk_dynamodb::{primitives::Blob, types::AttributeValue};
 use chrono::Local;
+use lambda_http::tracing;
+use serde_json::json;
 
 pub async fn ws_token_verify(
     dynamo_client: &aws_sdk_dynamodb::Client,
@@ -79,6 +81,37 @@ pub async fn ws_disconnect(
     // 혹시 Guest 가 존재할수 있으니 지워준다.
     let delete_ws_conn_pk = format!("WS_CONN#{connection_id}");
     let delete_ws_conn_sk = format!("INFO");
+    let delete_ws_conn_topic_sk = format!("WS_TOPIC#");
+
+    let output = dynamo_client
+        .query()
+        .table_name(util::dynamo::get_table_name())
+        .key_condition_expression("PK = :PK AND begins_with(SK, :SK)")
+        .expression_attribute_values(":PK", AttributeValue::S(delete_ws_conn_pk.clone()))
+        .expression_attribute_values(":SK", AttributeValue::S(delete_ws_conn_topic_sk))
+        .send()
+        .await?;
+
+    for item in output.items.unwrap_or_default() {
+        let item_pk = item.get(PK).unwrap().as_s().unwrap().to_owned();
+        let item_sk = item.get(SK).unwrap().as_s().unwrap().to_owned();
+
+        let _delete_output = dynamo_client
+            .delete_item()
+            .table_name(util::dynamo::get_table_name())
+            .key(PK, AttributeValue::S(item_pk))
+            .key(SK, AttributeValue::S(item_sk.clone()))
+            .send()
+            .await?;
+
+        let _delete_output = dynamo_client
+            .delete_item()
+            .table_name(util::dynamo::get_table_name())
+            .key(PK, AttributeValue::S(item_sk))
+            .key(SK, AttributeValue::S(format!("WS_CONN#{connection_id}")))
+            .send()
+            .await?;
+    }
 
     let get_output = dynamo_client
         .get_item()
@@ -157,17 +190,138 @@ pub async fn ws_get_token(
 }
 
 // ws topic 세팅
-pub fn ws_subscribe_topic(
+pub async fn ws_subscribe_topic(
     dynamo_client: &aws_sdk_dynamodb::Client,
-    connection_id: String,
+    connection_id: &str,
+    sub: &str,
+    topic: &str,
 ) -> anyhow::Result<()> {
+    let ws_topic_pk = format!("WS_TOPIC#{topic}");
+    let ws_topic_sk = format!("WS_CONN#{connection_id}");
+    let time = Local::now().to_rfc3339();
+    let map = DynamoMapHelper::new()
+        .insert_pk(ws_topic_pk)
+        .insert_sk(ws_topic_sk)
+        .insert_attr_s("createdAt", &time)
+        .insert_attr_s("userId", sub)
+        .insert_attr_s("connectionId", &connection_id)
+        .build();
+
+    let output = dynamo_client
+        .put_item()
+        .table_name(util::dynamo::get_table_name())
+        .set_item(Some(map))
+        .send()
+        .await?;
+
+    let ws_conn_pk = format!("WS_CONN#{connection_id}");
+    let ws_conn_sk = format!("WS_TOPIC#{topic}");
+    let map = DynamoMapHelper::new()
+        .insert_pk(ws_conn_pk)
+        .insert_sk(ws_conn_sk)
+        .insert_attr_s("createdAt", &time)
+        .insert_attr_s("connectionId", &connection_id)
+        .build();
+    let output = dynamo_client
+        .put_item()
+        .table_name(util::dynamo::get_table_name())
+        .set_item(Some(map))
+        .send()
+        .await?;
     Ok(())
 }
 
 // ws topic 제거
-pub fn ws_unsubscribe_topic(
+pub async fn ws_unsubscribe_topic(
     dynamo_client: &aws_sdk_dynamodb::Client,
-    connection_id: String,
+    connection_id: &str,
+    sub: &str,
+    topic: &str,
 ) -> anyhow::Result<()> {
+    let ws_conn_pk = format!("WS_TOPIC#{topic}");
+    let ws_conn_sk = format!("WS_CONN#{connection_id}");
+    let _output = dynamo_client
+        .delete_item()
+        .table_name(util::dynamo::get_table_name())
+        .key(PK, AttributeValue::S(ws_conn_pk))
+        .key(SK, AttributeValue::S(ws_conn_sk))
+        .send()
+        .await?;
+
+    let delete_ws_conn_pk = format!("WS_CONN#{connection_id}");
+    let delete_ws_conn_topic_sk = format!("WS_TOPIC#{topic}");
+    let _delete_output = dynamo_client
+        .delete_item()
+        .table_name(util::dynamo::get_table_name())
+        .key(PK, AttributeValue::S(delete_ws_conn_pk))
+        .key(SK, AttributeValue::S(delete_ws_conn_topic_sk))
+        .send()
+        .await?;
+    // let output = dynamo_client
+    //     .query()
+    //     .table_name(util::dynamo::get_table_name())
+    //     .key_condition_expression("PK = :PK AND begins_with(SK, :SK)")
+    //     .expression_attribute_values(":PK", AttributeValue::S(delete_ws_conn_pk.clone()))
+    //     .expression_attribute_values(":SK", AttributeValue::S(delete_ws_conn_topic_sk))
+    //     .send()
+    //     .await?;
+
+    // for item in output.items.unwrap_or_default() {
+    //     let item_pk = item.get(PK).unwrap().as_s().unwrap().to_owned();
+    //     let item_sk = item.get(SK).unwrap().as_s().unwrap().to_owned();
+    //     let _delete_output = dynamo_client
+    //         .delete_item()
+    //         .table_name(util::dynamo::get_table_name())
+    //         .key(PK, AttributeValue::S(item_pk))
+    //         .key(SK, AttributeValue::S(item_sk.clone()))
+    //         .send()
+    //         .await?;
+
+    //     // let _delete_output = dynamo_client
+    //     //     .delete_item()
+    //     //     .table_name(util::dynamo::get_table_name())
+    //     //     .key(PK, AttributeValue::S(item_sk))
+    //     //     .key(SK, AttributeValue::S(format!("WS_CONN#{connection_id}")))
+    //     //     .send()
+    //     //     .await?;
+    // }
+    Ok(())
+}
+
+pub async fn ws_room_chat(
+    dynamo_client: &aws_sdk_dynamodb::Client,
+    gw_ws_client: &aws_sdk_apigatewaymanagement::Client,
+    connection_id: &str,
+    sub: &str,
+    msg: &str,
+    room_id: &str,
+) -> anyhow::Result<()> {
+    // get all topoics
+    let ws_topic_pk = format!("WS_TOPIC#ROOM#{room_id}");
+    let ws_topic_sk = format!("WS_CONN#");
+
+    let output = dynamo_client
+        .query()
+        .table_name(util::dynamo::get_table_name())
+        .key_condition_expression("PK = :PK AND begins_with(SK, :SK)")
+        .expression_attribute_values(":PK", AttributeValue::S(ws_topic_pk))
+        .expression_attribute_values(":SK", AttributeValue::S(ws_topic_sk))
+        .send()
+        .await?;
+
+    let items = output.items.unwrap_or_default();
+
+    for item in items {
+        let connection_id = item.get("connectionId").unwrap().as_s().unwrap();
+        let res = gw_ws_client
+            .post_to_connection()
+            .connection_id(connection_id)
+            .data(util::dynamo::json_value_to_blob(json!({"msg": msg}))?)
+            .send()
+            .await;
+        if let Err(err) = res {
+            tracing::error!("post to connection err: {err:?}");
+        }
+    }
     Ok(())
 }

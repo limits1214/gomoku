@@ -34,6 +34,11 @@ impl FromRef<ArcAppState> for aws_sdk_dynamodb::Client {
         input.0.dynamo_client.clone()
     }
 }
+impl FromRef<ArcAppState> for aws_sdk_apigatewaymanagement::Client {
+    fn from_ref(input: &ArcAppState) -> Self {
+        input.0.gw_ws_client.clone()
+    }
+}
 
 async fn make_dynamo_client() -> aws_sdk_dynamodb::Client {
     let shared_config = util::config::get_aws_config();

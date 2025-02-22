@@ -25,6 +25,8 @@
 //     Ok(user_id)
 // }
 
+pub mod dynamo;
+
 use lambda_http::tracing;
 use serde_json::{json, Value};
 

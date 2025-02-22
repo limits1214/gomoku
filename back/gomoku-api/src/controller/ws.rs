@@ -11,7 +11,7 @@ use utoipa::OpenApi;
 use crate::{
     config::app_state::ArcAppState,
     dto::{
-        request::ws::{WsDisConnect, WsGetToken, WsTokenVerify, WsTopic},
+        request::ws::{WsDisConnect, WsGetToken, WsRoomChat, WsTokenVerify, WsTopic},
         response::ApiResponse,
     },
     error::HandlerError,
@@ -22,22 +22,25 @@ use crate::{
 
 pub fn ws_router(_state: ArcAppState) -> Router<ArcAppState> {
     Router::new()
-        // .route("/ws/initial", post(ws_initial))
-        .route("/ws/disconnect", post(ws_disconnect))
-        // .route("/ws/conn_list", get(ws_conn_list))
         .route("/ws/temptoken/issue", get(ws_temp_token_issue))
         .route("/ws/temptoken/verify", post(ws_temp_token_verify))
-        //
         .route("/ws/token", post(ws_get_token_by_connection_id))
+        .route("/ws/disconnect", post(ws_disconnect))
         //
         .route("/ws/topic/subscribe", post(ws_subscribe_topic))
         .route("/ws/topic/unsubscribe", post(ws_unsubscribe_topic))
+        //
+        .route("/ws/room/chat", post(ws_room_chat))
     //
 }
 
 #[derive(OpenApi)]
 #[openapi(
-    paths( ws_disconnect, ws_temp_token_issue, ws_temp_token_verify, ws_get_token_by_connection_id, ws_subscribe_topic, ws_unsubscribe_topic),
+    paths(
+        ws_disconnect, ws_temp_token_issue, ws_temp_token_verify, ws_get_token_by_connection_id,
+        ws_subscribe_topic, ws_unsubscribe_topic,
+        ws_room_chat,
+    ),
     tags(
         (name = "ws", description = "ws desc"),
     ),
@@ -82,14 +85,7 @@ pub async fn ws_disconnect(
     Ok(Json(ret))
 }
 
-#[utoipa::path(tag = "ws", get, path = "/conn_list")]
-pub async fn ws_conn_list(
-    dynamo_client: State<aws_sdk_dynamodb::Client>,
-) -> Result<impl IntoResponse, HandlerError> {
-    let ret = ApiResponse::success(());
-    Ok(Json(ret))
-}
-
+// connection id로 ws token 가져오기
 #[utoipa::path(tag = "ws", post, path = "/token")]
 pub async fn ws_get_token_by_connection_id(
     dynamo_client: State<aws_sdk_dynamodb::Client>,
@@ -105,20 +101,52 @@ pub async fn ws_get_token_by_connection_id(
 
 #[utoipa::path(tag = "ws", post, path = "/topic/subscribe")]
 pub async fn ws_subscribe_topic(
+    dynamo_client: State<aws_sdk_dynamodb::Client>,
     WsGuard(w): WsGuard,
     Json(j): Json<WsTopic>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    tracing::info!("ws_subscribe_topic, {j:?}");
+    tracing::info!(
+        "ws_subscribe_topic, {j:?}, connection_id: {:?}, sub: {:?}",
+        w.connection_id,
+        w.sub
+    );
+    service::ws::ws_subscribe_topic(&dynamo_client, &w.connection_id, &w.sub, &j.topic).await?;
     let ret = ApiResponse::success(());
     Ok(Json(ret))
 }
 
 #[utoipa::path(tag = "ws", post, path = "/topic/unsubscribe")]
 pub async fn ws_unsubscribe_topic(
+    dynamo_client: State<aws_sdk_dynamodb::Client>,
     WsGuard(w): WsGuard,
     Json(j): Json<WsTopic>,
 ) -> Result<impl IntoResponse, HandlerError> {
-    tracing::info!("ws_unsubscribe_topic, {j:?}");
+    tracing::info!(
+        "ws_unsubscribe_topic, {j:?}, connection_id: {:?}, sub: {:?}",
+        w.connection_id,
+        w.sub
+    );
+    service::ws::ws_unsubscribe_topic(&dynamo_client, &w.connection_id, &w.sub, &j.topic).await?;
+    let ret = ApiResponse::success(());
+    Ok(Json(ret))
+}
+
+#[utoipa::path(tag = "ws", post, path = "/room/chat")]
+pub async fn ws_room_chat(
+    dynamo_client: State<aws_sdk_dynamodb::Client>,
+    gw_ws_client: State<aws_sdk_apigatewaymanagement::Client>,
+    WsGuard(w): WsGuard,
+    Json(j): Json<WsRoomChat>,
+) -> Result<impl IntoResponse, HandlerError> {
+    service::ws::ws_room_chat(
+        &dynamo_client,
+        &gw_ws_client,
+        &w.connection_id,
+        &w.sub,
+        &j.msg,
+        &j.room_id,
+    )
+    .await?;
     let ret = ApiResponse::success(());
     Ok(Json(ret))
 }
