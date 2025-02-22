@@ -1,4 +1,7 @@
-use crate::config::APP_CONFIG;
+use crate::{
+    config::APP_CONFIG,
+    constant::{PK, SK},
+};
 use aws_sdk_dynamodb::{primitives::Blob, types::AttributeValue};
 use std::collections::HashMap;
 
@@ -11,9 +14,6 @@ pub fn get_table_name() -> &'static str {
         .table_name
         .as_str()
 }
-
-const PK: &str = "PK";
-const SK: &str = "SK";
 
 pub struct DynamoMapHelper(HashMap<String, AttributeValue>);
 

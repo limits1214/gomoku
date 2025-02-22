@@ -70,8 +70,8 @@ pub async fn ws_temp_token_verify(
 ) -> Result<impl IntoResponse, HandlerError> {
     // todo: connection_id verify from apigatemanagerment
     let ws = util::jwt::decode_ws_temp(&j.token)?;
-    service::ws::ws_token_verify(&dynamo_client, &j.connection_id, &ws.sub).await?;
-    let ret = ApiResponse::success(());
+    // service::ws::ws_token_verify(&dynamo_client, &j.connection_id, &ws.sub).await?;
+    let ret = ApiResponse::success(json!({"sub": ws.sub}));
     Ok(Json(ret))
 }
 

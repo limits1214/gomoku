@@ -16,3 +16,6 @@ anyhow = "1"
 config = "0.15"
 aws-sdk-dynamodb = "1.64.0"
 futures = "0.3.31"
+# time
+time = "0.3.37"
+chrono = { version = "0.4.39", features = ["serde"] }
