@@ -22,22 +22,36 @@ pub async fn main() {
         .region(Region::new("ap-northeast-2"))
         .load()
         .await;
-    let api_gw_client = make_gw_client(&shared_config).await;
-    let dynamo_client = make_dynamo_client(&shared_config).await;
-    let http_client = reqwest::Client::new();
+    let api_gw_client = make_gw_client(&shared_config);
+    let dynamo_client = make_dynamo_client(&shared_config);
+    let sqs_client = make_sqs_client(&shared_config);
+    let http_client = make_http_client();
 
     if let Err(e) = lambda_http::run(service_fn(|event| async {
-        request_handler(event, &api_gw_client, &dynamo_client, &http_client).await
+        request_handler(
+            event,
+            &api_gw_client,
+            &dynamo_client,
+            &sqs_client,
+            &http_client,
+        )
+        .await
     }))
     .await
     {
         tracing::error!("error: {e:?}");
     }
 }
-async fn make_dynamo_client(shared_config: &SdkConfig) -> aws_sdk_dynamodb::Client {
+fn make_http_client() -> reqwest::Client {
+    reqwest::Client::new()
+}
+fn make_sqs_client(shared_config: &SdkConfig) -> aws_sdk_sqs::Client {
+    aws_sdk_sqs::Client::new(shared_config)
+}
+fn make_dynamo_client(shared_config: &SdkConfig) -> aws_sdk_dynamodb::Client {
     aws_sdk_dynamodb::Client::new(shared_config)
 }
-async fn make_gw_client(shared_config: &SdkConfig) -> aws_sdk_apigatewaymanagement::Client {
+fn make_gw_client(shared_config: &SdkConfig) -> aws_sdk_apigatewaymanagement::Client {
     let connection_url = APP_CONFIG
         .get()
         .unwrap()
@@ -58,6 +72,7 @@ async fn request_handler(
     request: Request,
     api_gw_client: &aws_sdk_apigatewaymanagement::Client,
     dynamo_client: &aws_sdk_dynamodb::Client,
+    sqs_client: &aws_sdk_sqs::Client,
     http_client: &reqwest::Client,
 ) -> Result<Response<Body>, Error> {
     let context = request
@@ -113,7 +128,7 @@ async fn request_handler(
             match serde_json::from_slice::<WsRequestMessage>(&body) {
                 Ok(body) => match body {
                     WsRequestMessage::Echo { msg } => {
-                        handler::echo::echo_handler(api_gw_client.clone(), connection_id, msg)
+                        handler::echo::echo_handler(api_gw_client, sqs_client, connection_id, msg)
                             .await?;
                     }
                     WsRequestMessage::TopicSubscribe { topic } => {
@@ -129,7 +144,6 @@ async fn request_handler(
                             dynamo_client,
                             api_gw_client,
                             &connection_id,
-                            http_client.clone(),
                             &msg,
                             &room_id,
                         )

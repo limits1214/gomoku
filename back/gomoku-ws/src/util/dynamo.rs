@@ -15,6 +15,8 @@ pub fn get_table_name() -> &'static str {
         .as_str()
 }
 
+pub type DynamoMap = HashMap<String, AttributeValue>;
+
 pub struct DynamoMapHelper(HashMap<String, AttributeValue>);
 
 impl DynamoMapHelper {

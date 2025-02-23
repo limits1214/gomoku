@@ -14,4 +14,6 @@ deploy-api-dev:
 	cargo lambda deploy --include Settings.toml:./gomoku-api/Settings.toml --binary-name gomoku-api gomoku-api-dev
 	
 build-q:
-deploy-q:
+	cargo lambda build -p gomoku-q --release --target=x86_64-unknown-linux-musl
+deploy-q-dev:
+	cargo lambda deploy --include Settings.toml:./gomoku-q/Settings.toml --binary-name gomoku-q gomoku-q-dev

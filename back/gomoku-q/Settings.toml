@@ -4,5 +4,3 @@ table_name = "Test"
 url = "https://d1ajnxw70iv7nb.cloudfront.net"
 [gw_ws]
 connections_url = "https://0gnlyzkqd6.execute-api.ap-northeast-2.amazonaws.com/dev"
-[sqs]
-queue_url = "https://sqs.ap-northeast-2.amazonaws.com/919517726743/TestQ"

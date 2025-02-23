@@ -23,6 +23,10 @@ impl AppConfig {
     }
 }
 #[derive(Debug, Deserialize)]
+pub struct SqsSettings {
+    pub queue_url: String,
+}
+#[derive(Debug, Deserialize)]
 pub struct DynamoSettings {
     pub table_name: String,
 }
@@ -39,6 +43,7 @@ pub struct Settings {
     pub api: ApiSettings,
     pub gw_ws: GwWsSettings,
     pub dynamo: DynamoSettings,
+    pub sqs: SqsSettings,
 }
 
 impl Settings {

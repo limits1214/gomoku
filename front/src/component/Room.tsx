@@ -81,14 +81,6 @@ const Room = ({roomId, roomName}: RoomParam) => {
         }
       };
       sendWsMessage(JSON.stringify(obj));
-
-      const obj2 = {
-        t: 'echo',
-        d: {
-          msg: 'msg'
-        }
-      };
-      sendWsMessage(JSON.stringify(obj2));
     }
   }
   const [chat, setChat] = useState("");

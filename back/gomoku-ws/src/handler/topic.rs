@@ -1,5 +1,7 @@
 use aws_sdk_dynamodb::types::AttributeValue;
 use chrono::Local;
+use futures::future::join_all;
+use lambda_http::tracing;
 
 use crate::{
     constant::{PK, SK},
@@ -90,5 +92,51 @@ pub async fn topic_unsubscribe(
         .send()
         .await?;
 
+    Ok(())
+}
+
+pub async fn topic_post(
+    dynamo_client: &aws_sdk_dynamodb::Client,
+    gw_ws_client: &aws_sdk_apigatewaymanagement::Client,
+    topic_pk: &str,
+    value: serde_json::Value,
+) -> anyhow::Result<()> {
+    let topic_sk = format!("WS_CONN#");
+    let output = dynamo_client
+        .query()
+        .table_name(util::dynamo::get_table_name())
+        .key_condition_expression("PK = :PK AND begins_with(SK, :SK)")
+        .expression_attribute_values(":PK", AttributeValue::S(topic_pk.to_owned()))
+        .expression_attribute_values(":SK", AttributeValue::S(topic_sk))
+        .send()
+        .await?;
+    let items = output.items.unwrap_or_default();
+    let futures = items
+        .into_iter()
+        .map(|item| {
+            let connection_id = item
+                .get("connectionId")
+                .unwrap()
+                .as_s()
+                .unwrap()
+                .to_string();
+            let value = value.clone();
+            let gw_ws_client = gw_ws_client.clone();
+
+            async move {
+                let res = gw_ws_client
+                    .post_to_connection()
+                    .connection_id(&connection_id)
+                    .data(util::dynamo::json_value_to_blob(value).unwrap())
+                    .send()
+                    .await;
+
+                if let Err(err) = res {
+                    tracing::error!("post to connection err: {err:?}");
+                }
+            }
+        })
+        .collect::<Vec<_>>();
+    join_all(futures).await;
     Ok(())
 }
