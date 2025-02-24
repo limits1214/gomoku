@@ -28,7 +28,11 @@ pub async fn main() {
     let http_client = make_http_client();
 
     let table_name = crate::util::dynamo::get_table_name();
-    gomoku_lib::config::set_lib_config(table_name.to_owned(), dynamo_client.clone());
+    gomoku_lib::config::set_lib_config(
+        table_name.to_owned(),
+        dynamo_client.clone(),
+        api_gw_client.clone(),
+    );
 
     if let Err(e) = lambda_http::run(service_fn(|event| async {
         request_handler(

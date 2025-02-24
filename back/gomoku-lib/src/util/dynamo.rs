@@ -11,7 +11,9 @@ pub fn get_table_name() -> &'static str {
 pub fn get_dynamo_client() -> &'static aws_sdk_dynamodb::Client {
     &APP_CONFIG.get().unwrap().dynamo_client
 }
-
+pub fn get_gw_ws_client() -> &'static aws_sdk_apigatewaymanagement::Client {
+    &APP_CONFIG.get().unwrap().gw_ws_client
+}
 pub type DynamoMap = HashMap<String, AttributeValue>;
 
 pub struct DynamoMapHelper(HashMap<String, AttributeValue>);
