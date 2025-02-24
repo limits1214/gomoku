@@ -27,6 +27,9 @@ pub async fn main() {
     let sqs_client = make_sqs_client(&shared_config);
     let http_client = make_http_client();
 
+    let table_name = crate::util::dynamo::get_table_name();
+    gomoku_lib::config::set_lib_config(table_name.to_owned(), dynamo_client.clone());
+
     if let Err(e) = lambda_http::run(service_fn(|event| async {
         request_handler(
             event,
