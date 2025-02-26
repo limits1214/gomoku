@@ -1,6 +1,6 @@
 # GOMOKU
 간단히 오목을 두는 사이트
-url: https://gogomoku.vercel.app/
+url: https://gogomoku.vercel.app/ 
  
 #### 사용 스택
 프론트엔드: 넥스트js
