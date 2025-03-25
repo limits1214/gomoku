@@ -70,7 +70,6 @@ const Ws = () => {
       } catch(error) {
         console.error(error);
       }
-      
     }
   }, [lastMessage, setLastWsMessage])
 

@@ -16,8 +16,13 @@ const SignupGuest = () => {
     setIsVisible(false)
   }
   
+  
   return (
     <>
+
+      <button onClick={() => {
+        window.location.href = 'https://d1ajnxw70iv7nb.cloudfront.net/test/cookie'
+      }}>asdsdfasdfasdff</button>
       {isVisible && <div>
           <input type="text" onChange={onChangeNickName} />
           <button onClick={ handleSingup }>Signup</button>

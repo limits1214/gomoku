@@ -1,7 +1,20 @@
 'use client'
+import { Button } from '@/components/ui/button';
 import { useWsStore } from '@/store/store';
 import Link from 'next/link';
-import React, {  useEffect, useState } from 'react'
+import React, {  useEffect, useRef, useState } from 'react'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card"
+import { Separator } from "@/components/ui/separator"
+
+
 
 interface RoomParam {
   roomId: string,
@@ -10,22 +23,10 @@ interface RoomParam {
 
 
 const Room = ({roomId, roomName}: RoomParam) => {
-  const {sendWsMessage, lastWsMessage} = useWsStore();
+  
+  const {sendWsMessage} = useWsStore();
 
   useEffect(() => {
-    // fetch room info
-    // const a = async () => {
-    //   console.log('channel', channel)
-    //   const params = new URLSearchParams({
-    //     channel,
-    //     roomNum
-    //   });
-    //   const queryString = params.toString();
-    //   const res = await fetch(`/api/channelroom?${queryString}`)
-    //   const j = await res.json();
-    //   console.log('j', j)
-    // }
-    // a();
     if (sendWsMessage) {
       const obj = {
         t: 'topicSubscribe',
@@ -48,19 +49,42 @@ const Room = ({roomId, roomName}: RoomParam) => {
     }
   }, [roomId, roomName, sendWsMessage])
 
-  useEffect(() => {
-    if (sendWsMessage) {
-      // const obj = {
-      //   t: 'echo',
-      //   d: {
-      //     msg: 'msg'
-      //   }
-      // };
-      // sendWsMessage(JSON.stringify(obj));
-    }
-  }, [sendWsMessage])
 
+
+  return (
+    // <Card className=''>
+      <CardContent className='flex p-2'>
+        <GameArea/>
+        <InfoArea roomId={roomId} roomName={roomName}/>
+      </CardContent>
+    // </Card>
+  )
+}
+
+export default Room
+
+const GameArea = () => {
+  return (
+    <Card className='flex-[5]'>
+      <CardContent>
+        sdf
+      </CardContent>
+    </Card>
+  )
+}
+
+interface InfoAreaParam {
+  roomId: string,
+  roomName: string
+}
+const InfoArea = ({roomId, roomName}: InfoAreaParam) => {
+  const {sendWsMessage, lastWsMessage} = useWsStore();
+  const isFirstRender = useRef(true);
   useEffect(() => {
+    if (isFirstRender.current) {
+        isFirstRender.current = false; // 첫 실행을 무시
+        return;
+    }
     if (lastWsMessage) {
       console.log('lastMessage z', lastWsMessage)
     }
@@ -71,8 +95,11 @@ const Room = ({roomId, roomName}: RoomParam) => {
   }
 
   const handleChatSend = () => {
-    console.log(chat)
     if (sendWsMessage) {
+      if (chat == '') {
+        return;
+      }
+      
       const obj = {
         t: 'roomChat',
         d: {
@@ -81,24 +108,52 @@ const Room = ({roomId, roomName}: RoomParam) => {
         }
       };
       sendWsMessage(JSON.stringify(obj));
+      setChat('')
     }
   }
   const [chat, setChat] = useState("");
 
-  
-
   return (
-    <div className=''>
-      <Link href={"/"}>home</Link>
-      <div className=''>
-
-      </div>
-      <div className='border border-black'>
-        <input type="text" onChange={chatInputOnChange} />
-        <button onClick={handleChatSend}>send</button>
-      </div>
-    </div>
+    <Card className='flex-[2]'>
+      <CardContent>
+        <div>
+          <span>RoomName {roomName}</span>
+          <Link href={"/"}>
+            <Button>home</Button>
+          </Link>
+        </div>
+        <Separator/>
+        <div>
+          <div className='flex'>
+            <div>
+              <span>player white</span>
+              <span>time 111</span>
+            </div>
+            <div>
+              <span>player black</span>
+              <span>time 13</span>
+            </div>
+          </div>
+        </div>
+        <Separator/>
+        <div>
+          <Tabs defaultValue="chat" className="">
+            <TabsList>
+              <TabsTrigger value="chat">Chat</TabsTrigger>
+              <TabsTrigger value="users">Users</TabsTrigger>
+              <TabsTrigger value="settings">Settings</TabsTrigger>
+            </TabsList>
+            <TabsContent value="chat">
+              <div>
+                <input type="text" onChange={chatInputOnChange} value={chat} />
+                <Button onClick={handleChatSend}>send</Button>
+              </div>
+            </TabsContent>
+            <TabsContent value="users">User List</TabsContent>
+            <TabsContent value="settings">Settings</TabsContent>
+          </Tabs>
+        </div>
+      </CardContent>
+    </Card>
   )
 }
-
-export default Room
