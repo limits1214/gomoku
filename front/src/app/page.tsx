@@ -6,7 +6,7 @@ interface RoomInfo {
   roomId: string,
   roomName: string,
   roomNum: string,
-} 
+}
 
 export default async function Home() {
   const channel = "1";
